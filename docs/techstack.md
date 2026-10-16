@@ -1,0 +1,1 @@
+The tech stack for the application will be Python with FastAPI and SQLite for a simple and easy to make backend, and the frontend will be made with HTML and JS. Pytest will be used for testing the application and pip-audit will be used to check for possible vulnerabilities in the dependencies.
