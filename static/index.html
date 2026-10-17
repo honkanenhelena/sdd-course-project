@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f5f1">
+    <title>Pocket Ledger | Monthly spending</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Pocket Ledger home">
+        <span class="brand-mark" aria-hidden="true">p</span>
+        <span>Pocket<span class="brand-light">Ledger</span></span>
+      </a>
+      <div class="topbar-tools">
+        <label class="sr-only" for="month-picker">Select month</label>
+        <input id="month-picker" class="month-picker" type="month">
+        <button id="add-expense-button" class="button button-primary" type="button">
+          <span class="button-plus" aria-hidden="true">+</span> Add expense
+        </button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="page-heading" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow" id="selected-month-label">MONTHLY OVERVIEW</p>
+          <h1 id="page-title">Your money, <span>in focus.</span></h1>
+        </div>
+        <p class="heading-date" id="today-label"></p>
+      </section>
+
+      <section class="overview-grid" aria-label="Monthly totals">
+        <article class="metric-card metric-spent">
+          <div class="metric-topline"><span class="metric-label">TOTAL SPENT</span><span class="metric-dot"></span></div>
+          <p class="metric-value" id="total-spent">$0.00</p>
+          <p class="metric-foot" id="expense-count">0 transactions</p>
+          <div class="metric-accent" aria-hidden="true"></div>
+        </article>
+        <article class="metric-card metric-budget">
+          <div class="metric-topline"><span class="metric-label">BUDGET LEFT</span><span class="metric-glyph" aria-hidden="true">↗</span></div>
+          <p class="metric-value" id="budget-left">$0.00</p>
+          <p class="metric-foot" id="budget-caption">Set category budgets below</p>
+          <div class="budget-meter" aria-hidden="true"><span id="overall-budget-meter"></span></div>
+        </article>
+        <article class="metric-card metric-categories">
+          <div class="metric-topline"><span class="metric-label">CATEGORIES USED</span><span class="metric-glyph" aria-hidden="true">◌</span></div>
+          <p class="metric-value" id="category-count">0</p>
+          <p class="metric-foot" id="month-total-budget">$0.00 budgeted this month</p>
+          <div class="category-stamps" id="category-stamps" aria-hidden="true"></div>
+        </article>
+      </section>
+
+      <section class="insights-grid" aria-label="Spending insights">
+        <article class="panel chart-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">AT A GLANCE</p><h2>Spending by category</h2></div>
+            <span class="panel-period" id="chart-period"></span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="spending-chart" role="img" aria-label="Monthly spending by category"></canvas>
+            <p class="chart-empty" id="chart-empty">Your category chart will appear here.</p>
+          </div>
+          <div class="chart-legend" id="chart-legend"></div>
+        </article>
+
+        <article class="panel category-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">PLAN &amp; COMPARE</p><h2>Category budgets</h2></div>
+            <span class="budget-total" id="budget-total-chip">$0 budgeted</span>
+          </div>
+          <form id="budget-form" class="budget-form">
+            <label class="sr-only" for="budget-category">Category</label>
+            <input id="budget-category" name="category" list="category-options" maxlength="60" placeholder="Category" required>
+            <datalist id="category-options"></datalist>
+            <label class="sr-only" for="budget-amount">Monthly limit</label>
+            <span class="currency-input"><span aria-hidden="true">$</span><input id="budget-amount" name="amount" type="number" min="0.01" step="0.01" placeholder="Limit" required></span>
+            <button class="button button-quiet" type="submit" aria-label="Save category budget" title="Save category budget">Save</button>
+          </form>
+          <div class="budget-list" id="budget-list" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <section class="transactions panel" aria-labelledby="transactions-title">
+        <div class="transactions-heading">
+          <div><p class="eyebrow">YOUR RECORD</p><h2 id="transactions-title">Transactions <span id="visible-count">0</span></h2></div>
+          <div class="filters" role="search">
+            <label class="search-field"><span class="search-icon" aria-hidden="true">⌕</span><span class="sr-only">Search expenses</span><input id="search-filter" type="search" placeholder="Search expenses"></label>
+            <label class="sr-only" for="category-filter">Filter by category</label>
+            <select id="category-filter"><option value="">All categories</option></select>
+            <label class="sr-only" for="necessity-filter">Filter by necessity</label>
+            <select id="necessity-filter">
+              <option value="">All spending</option>
+              <option value="true">Necessities</option>
+              <option value="false">Non-essentials</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">DATE</th><th scope="col">EXPENSE</th><th scope="col">CATEGORY</th><th scope="col">TYPE</th><th scope="col" class="amount-column">AMOUNT</th><th scope="col" aria-label="Actions"></th></tr></thead>
+            <tbody id="expense-rows"></tbody>
+          </table>
+          <div class="table-empty" id="table-empty" hidden>
+            <span class="empty-mark" aria-hidden="true">—</span>
+            <p>No expenses match this view.</p>
+            <button class="text-button" id="empty-add-button" type="button">Add your first expense</button>
+          </div>
+        </div>
+      </section>
+      <footer class="page-footer"><span>POCKET LEDGER</span><span>Every dollar, accounted for.</span></footer>
+    </main>
+
+    <dialog id="expense-dialog" class="expense-dialog">
+      <form id="expense-form" class="expense-form">
+        <div class="dialog-heading">
+          <div><p class="eyebrow" id="dialog-eyebrow">NEW ENTRY</p><h2 id="dialog-title">Add expense</h2></div>
+          <button class="close-button" id="close-dialog" type="button" aria-label="Close dialog" title="Close">×</button>
+        </div>
+        <input id="expense-id" type="hidden">
+        <label class="form-label" for="expense-amount">Amount</label>
+        <div class="amount-field"><span aria-hidden="true">$</span><input id="expense-amount" name="amount" type="number" min="0.01" max="10000000" step="0.01" placeholder="0.00" required></div>
+        <div class="form-two-column">
+          <div><label class="form-label" for="expense-date">Date</label><input id="expense-date" name="date" type="date" required></div>
+          <div><label class="form-label" for="expense-category">Category</label><input id="expense-category" name="category" maxlength="60" placeholder="e.g. Groceries" required></div>
+        </div>
+        <label class="form-label" for="expense-note">Note <span class="optional-label">OPTIONAL</span></label>
+        <input id="expense-note" name="note" maxlength="500" placeholder="What was it for?">
+        <label class="necessity-toggle"><input id="expense-necessity" name="necessity" type="checkbox"><span class="toggle-track" aria-hidden="true"></span><span><strong>Essential expense</strong><small>Mark this as a necessity</small></span></label>
+        <p class="form-error" id="form-error" role="alert"></p>
+        <div class="dialog-actions"><button class="button button-quiet" id="cancel-dialog" type="button">Cancel</button><button class="button button-primary" id="save-expense" type="submit">Save expense</button></div>
+      </form>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
