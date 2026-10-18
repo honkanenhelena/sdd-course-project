@@ -4,6 +4,7 @@ Prompt: You are an expert software engineer tasked with making an application fo
 
 Expected answer/result: A working base version which would fill the basic requests and be built with the correct tech stack.
 
-Outcome of prompt: 
+Outcome of prompt: A base version which does look professional and seems to deliver on most basics, but it is missing some features and has some flaws. Main features that were directly asked for that are missing or broken are: Filtering by the date, for this to work there ofcourse also needs to be a monthly or global list somewhere for the expenses, the budgets cant be edited in any intuitive way and instead need the user to resubmit the budget for the category, the budgets are also missing a delete button and feature completely since they cant be re-submitted with the value at 0, this is also one thing the AI has invented since a user may want a total 0 budget on something a certain month. 
+A feature that was not explicitly asked for but that the AI decided for was to show all of the categories in the budget section, even though they did not have budgets set. So once a category got a budget all of the other categories were also listed on the budgets list even if they had no budget set.
 
-Type of prompt
+Type of prompt: Initial vibe code core idea prompt
