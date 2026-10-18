@@ -8,3 +8,12 @@ Outcome of prompt: A base version which does look professional and seems to deli
 A feature that was not explicitly asked for but that the AI decided for was to show all of the categories in the budget section, even though they did not have budgets set. So once a category got a budget all of the other categories were also listed on the budgets list even if they had no budget set.
 
 Type of prompt: Initial vibe code core idea prompt
+
+
+Prompt 2
+
+Prompt: There are some parts missing, I wanted filtering by date, I need the budgets to have a button to edit and remove them, and the budget list shows categories which dont have budgets, the user also cant add a budget of 0 for a category.
+
+Expected answer/result: Fixes to all requested issues with a possibility of an additional feature by the AI
+
+Outcome of prompt: A very clean fix to all of the issues listed, date filtering was added with an additional clear dates button that was not asked for but nice to have. The budgets were also fixed to only show categories with budgets and now budgets with a value of 0 could be added. One thing however which was noticed when testing this version was that the selection of category when adding an expense did not suggest existing categories, but the user instead had to remember them and make sure the letters were capitalized the same. One obvious missing part was also the visual spending chart which should show the different categories and their respective parts of the total. 
