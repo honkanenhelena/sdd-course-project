@@ -69,6 +69,11 @@ def test_filters_budgets_and_month_isolation(tmp_path):
 
         assert len(client.get("/api/expenses", params={"month": "2026-10", "necessity": True}).json()) == 1
         assert len(client.get("/api/expenses", params={"search": "train"}).json()) == 1
+        assert len(client.get("/api/expenses", params={"start_date": "2026-10-10", "end_date": "2026-10-10"}).json()) == 1
+        assert len(client.get("/api/expenses", params={"start_date": "2026-10-11"}).json()) == 0
+        assert client.get(
+            "/api/expenses", params={"start_date": "2026-10-11", "end_date": "2026-10-09"}
+        ).status_code == 422
         assert client.get("/api/summary", params={"month": "2026-10"}).json()["remaining"] == 0
 
         budget = client.put(
@@ -79,7 +84,22 @@ def test_filters_budgets_and_month_isolation(tmp_path):
         summary = client.get("/api/summary", params={"month": "2026-10"}).json()
         assert summary["budget"] == 100
         assert summary["remaining"] == 84.75
+        assert summary["categories"][0]["has_budget"] is True
         assert client.get("/api/summary", params={"month": "2026-09"}).json()["budget"] == 0
+
+        zero_budget = client.put(
+            "/api/budgets",
+            json={"month": "2026-10", "category": "Transit", "amount": 0},
+        )
+        assert zero_budget.status_code == 200
+        assert zero_budget.json()["amount"] == 0
+        assert client.get("/api/budgets", params={"month": "2026-10"}).json() == [
+            {"month": "2026-10", "category": "Transit", "amount": 0}
+        ]
+        zero_summary = client.get("/api/summary", params={"month": "2026-10"}).json()
+        assert zero_summary["budget"] == 0
+        assert zero_summary["remaining"] == -15.25
+        assert zero_summary["categories"][0]["has_budget"] is True
 
 
 def test_rejects_invalid_month_and_missing_expense(tmp_path):

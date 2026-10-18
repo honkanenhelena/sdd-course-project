@@ -1,7 +1,7 @@
 const monthPicker = document.querySelector("#month-picker");
 const colors = ["#176a50", "#e9795d", "#5688d8", "#e9b84b", "#8d68b1", "#4ca89c", "#dc9b4b"];
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const state = { expenses: [], summary: null, toastTimer: null, searchTimer: null };
+const state = { expenses: [], summary: null, toastTimer: null, searchTimer: null, editingBudget: null };
 
 function localMonth(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -41,7 +41,12 @@ function selectedMonthLabel(month) {
 }
 
 function expenseFilters() {
-  const params = new URLSearchParams({ month: monthPicker.value });
+  const startDate = document.querySelector("#date-from-filter").value;
+  const endDate = document.querySelector("#date-to-filter").value;
+  const params = new URLSearchParams();
+  if (!startDate && !endDate) params.set("month", monthPicker.value);
+  if (startDate) params.set("start_date", startDate);
+  if (endDate) params.set("end_date", endDate);
   const category = document.querySelector("#category-filter").value;
   const necessity = document.querySelector("#necessity-filter").value;
   const search = document.querySelector("#search-filter").value.trim();
@@ -92,27 +97,28 @@ function renderSummary() {
 
 function renderBudgets() {
   const list = document.querySelector("#budget-list");
-  const categories = state.summary.categories;
+  const categories = state.summary.categories.filter((item) => item.has_budget);
   if (!categories.length) {
-    list.innerHTML = '<p class="budget-empty">Add a category budget to start planning.</p>';
+    list.innerHTML = '<p class="budget-empty">No category budgets for this month.</p>';
     return;
   }
   list.innerHTML = categories.map((item) => {
-    const hasBudget = item.budget > 0;
-    const progress = hasBudget ? Math.min(100, (item.spent / item.budget) * 100) : 0;
-    const over = hasBudget && item.spent > item.budget;
+    const progress = item.budget > 0 ? Math.min(100, (item.spent / item.budget) * 100) : item.spent > 0 ? 100 : 0;
+    const over = item.spent > item.budget;
     return `<div class="budget-row">
-      <span class="budget-category" title="${escapeHTML(item.category)}">${escapeHTML(item.category)}</span>
-      ${hasBudget
-        ? `<div class="budget-progress" role="progressbar" aria-label="${escapeHTML(item.category)} budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><span class="${over ? "over" : ""}" style="width:${progress}%"></span></div><span class="budget-amounts"><strong>${money.format(item.spent)}</strong> / ${money.format(item.budget)}</span>`
-        : `<span class="budget-unset">No limit <button type="button" data-budget-category="${escapeHTML(item.category)}">Set</button></span><span class="budget-amounts"><strong>${money.format(item.spent)}</strong></span>`}
+      <div class="budget-name"><span class="budget-category" title="${escapeHTML(item.category)}">${escapeHTML(item.category)}</span><span class="budget-actions"><button type="button" data-budget-edit="${escapeHTML(item.category)}">Edit</button><button type="button" data-budget-remove="${escapeHTML(item.category)}">Remove</button></span></div>
+      <div class="budget-progress" role="progressbar" aria-label="${escapeHTML(item.category)} budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><span class="${over ? "over" : ""}" style="width:${progress}%"></span></div>
+      <span class="budget-amounts"><strong>${money.format(item.spent)}</strong> / ${money.format(item.budget)}</span>
     </div>`;
   }).join("");
 }
 
 function renderCategoryOptions() {
   const current = document.querySelector("#category-filter").value;
-  const categories = [...new Set(state.summary.categories.map((item) => item.category))].sort((a, b) => a.localeCompare(b));
+  const categories = [...new Set([
+    ...state.summary.categories.map((item) => item.category),
+    ...state.expenses.map((item) => item.category),
+  ])].sort((a, b) => a.localeCompare(b));
   document.querySelector("#category-filter").innerHTML = '<option value="">All categories</option>' + categories
     .map((category) => `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`).join("");
   if (categories.includes(current)) document.querySelector("#category-filter").value = current;
@@ -129,6 +135,9 @@ function renderExpenses() {
   const rows = document.querySelector("#expense-rows");
   const empty = document.querySelector("#table-empty");
   document.querySelector("#visible-count").textContent = String(state.expenses.length);
+  document.querySelector("#clear-date-filter").hidden = !(
+    document.querySelector("#date-from-filter").value || document.querySelector("#date-to-filter").value
+  );
   empty.hidden = state.expenses.length > 0;
   rows.innerHTML = state.expenses.map((expense) => `<tr>
     <td class="date-cell">${dateLabel(expense.date)}</td>
@@ -212,6 +221,9 @@ document.querySelector("#today-label").textContent = new Intl.DateTimeFormat("en
 monthPicker.value = localMonth();
 monthPicker.addEventListener("change", () => {
   document.querySelector("#category-filter").value = "";
+  document.querySelector("#date-from-filter").value = "";
+  document.querySelector("#date-to-filter").value = "";
+  document.querySelector("#clear-date-filter").hidden = true;
   refresh();
 });
 document.querySelector("#add-expense-button").addEventListener("click", () => openExpenseDialog());
@@ -270,6 +282,10 @@ document.querySelector("#budget-form").addEventListener("submit", async (event) 
     });
     categoryInput.value = "";
     document.querySelector("#budget-amount").value = "";
+    state.editingBudget = null;
+    categoryInput.readOnly = false;
+    document.querySelector("#budget-form button[type=submit]").textContent = "Save";
+    document.querySelector("#cancel-budget-edit").hidden = true;
     await refresh();
     showToast("Monthly budget saved");
   } catch (error) {
@@ -277,16 +293,55 @@ document.querySelector("#budget-form").addEventListener("submit", async (event) 
   }
 });
 
-document.querySelector("#budget-list").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-budget-category]");
-  if (!button) return;
-  const input = document.querySelector("#budget-category");
-  input.value = button.dataset.budgetCategory;
-  input.focus();
+document.querySelector("#budget-list").addEventListener("click", async (event) => {
+  const editButton = event.target.closest("[data-budget-edit]");
+  const removeButton = event.target.closest("[data-budget-remove]");
+  const category = editButton?.dataset.budgetEdit || removeButton?.dataset.budgetRemove;
+  if (!category) return;
+  if (editButton) {
+    const budget = state.summary.categories.find((item) => item.category === category && item.has_budget);
+    if (!budget) return;
+    state.editingBudget = category;
+    document.querySelector("#budget-category").value = category;
+    document.querySelector("#budget-category").readOnly = true;
+    document.querySelector("#budget-amount").value = budget.budget;
+    document.querySelector("#budget-form button[type=submit]").textContent = "Update";
+    document.querySelector("#cancel-budget-edit").hidden = false;
+    document.querySelector("#budget-amount").focus();
+    return;
+  }
+  if (!window.confirm(`Remove the ${category} budget for ${selectedMonthLabel(monthPicker.value)}?`)) return;
+  try {
+    const params = new URLSearchParams({ month: monthPicker.value, category });
+    await request(`/api/budgets?${params}`, { method: "DELETE" });
+    if (state.editingBudget === category) resetBudgetForm();
+    await refresh();
+    showToast("Monthly budget removed");
+  } catch (error) {
+    showToast(error.message, true);
+  }
 });
+
+function resetBudgetForm() {
+  state.editingBudget = null;
+  document.querySelector("#budget-form").reset();
+  document.querySelector("#budget-category").readOnly = false;
+  document.querySelector("#budget-form button[type=submit]").textContent = "Save";
+  document.querySelector("#cancel-budget-edit").hidden = true;
+}
+
+document.querySelector("#cancel-budget-edit").addEventListener("click", resetBudgetForm);
 
 document.querySelector("#category-filter").addEventListener("change", refresh);
 document.querySelector("#necessity-filter").addEventListener("change", refresh);
+document.querySelector("#date-from-filter").addEventListener("change", refresh);
+document.querySelector("#date-to-filter").addEventListener("change", refresh);
+document.querySelector("#clear-date-filter").addEventListener("click", () => {
+  document.querySelector("#date-from-filter").value = "";
+  document.querySelector("#date-to-filter").value = "";
+  document.querySelector("#clear-date-filter").hidden = true;
+  refresh();
+});
 document.querySelector("#search-filter").addEventListener("input", () => {
   clearTimeout(state.searchTimer);
   state.searchTimer = setTimeout(refresh, 180);

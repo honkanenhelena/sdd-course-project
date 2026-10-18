@@ -109,15 +109,25 @@ def create_app(database_path: str | Path | None = None) -> FastAPI:
     @app.get("/api/expenses")
     def list_expenses(
         month: str | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
         category: str | None = None,
         necessity: bool | None = None,
         search: str | None = Query(default=None, max_length=100),
     ) -> list[dict]:
         clauses: list[str] = []
         values: list[object] = []
+        if start_date and end_date and start_date > end_date:
+            raise HTTPException(status_code=422, detail="Start date must not be after end date")
         if month:
             clauses.append("substr(spent_on, 1, 7) = ?")
             values.append(_month(month))
+        if start_date:
+            clauses.append("spent_on >= ?")
+            values.append(start_date.isoformat())
+        if end_date:
+            clauses.append("spent_on <= ?")
+            values.append(end_date.isoformat())
         if category:
             clauses.append("category = ?")
             values.append(category)
@@ -223,6 +233,7 @@ def create_app(database_path: str | Path | None = None) -> FastAPI:
                     "necessities": (spending[category]["needs_cents"] if category in spending else 0) / 100,
                     "count": spending[category]["count"] if category in spending else 0,
                     "budget": budget_cents / 100,
+                    "has_budget": category in budgets,
                     "remaining": (budget_cents - spent_cents) / 100,
                 }
             )
@@ -258,17 +269,11 @@ def create_app(database_path: str | Path | None = None) -> FastAPI:
             (Decimal(str(budget.amount)) * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
         )
         with connection() as db:
-            if amount_cents == 0:
-                db.execute(
-                    "DELETE FROM budgets WHERE month = ? AND category = ?",
-                    (selected_month, category),
-                )
-            else:
-                db.execute(
-                    "INSERT INTO budgets (month, category, amount_cents) VALUES (?, ?, ?) "
-                    "ON CONFLICT(month, category) DO UPDATE SET amount_cents = excluded.amount_cents",
-                    (selected_month, category, amount_cents),
-                )
+            db.execute(
+                "INSERT INTO budgets (month, category, amount_cents) VALUES (?, ?, ?) "
+                "ON CONFLICT(month, category) DO UPDATE SET amount_cents = excluded.amount_cents",
+                (selected_month, category, amount_cents),
+            )
         return {"month": selected_month, "category": category, "amount": amount_cents / 100}
 
     @app.delete("/api/budgets", status_code=204)

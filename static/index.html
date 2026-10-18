@@ -79,8 +79,9 @@
             <input id="budget-category" name="category" list="category-options" maxlength="60" placeholder="Category" required>
             <datalist id="category-options"></datalist>
             <label class="sr-only" for="budget-amount">Monthly limit</label>
-            <span class="currency-input"><span aria-hidden="true">$</span><input id="budget-amount" name="amount" type="number" min="0.01" step="0.01" placeholder="Limit" required></span>
+            <span class="currency-input"><span aria-hidden="true">$</span><input id="budget-amount" name="amount" type="number" min="0" step="0.01" placeholder="Limit" required></span>
             <button class="button button-quiet" type="submit" aria-label="Save category budget" title="Save category budget">Save</button>
+            <button class="button button-quiet cancel-budget-edit" id="cancel-budget-edit" type="button" hidden>Cancel</button>
           </form>
           <div class="budget-list" id="budget-list" aria-live="polite"></div>
         </article>
@@ -99,6 +100,11 @@
               <option value="true">Necessities</option>
               <option value="false">Non-essentials</option>
             </select>
+            <label class="sr-only" for="date-from-filter">From date</label>
+            <input id="date-from-filter" type="date" aria-label="From date" title="From date">
+            <label class="sr-only" for="date-to-filter">Through date</label>
+            <input id="date-to-filter" type="date" aria-label="Through date" title="Through date">
+            <button id="clear-date-filter" class="clear-date-filter" type="button" hidden>Clear dates</button>
           </div>
         </div>
         <div class="table-scroll">

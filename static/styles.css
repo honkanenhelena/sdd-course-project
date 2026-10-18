@@ -106,15 +106,17 @@ h2 { margin: 0; font: 700 16px/1.3 var(--font-display); letter-spacing: 0; }
 .currency-input input { width: 100%; padding-left: 21px; }
 .budget-form .button { min-height: 35px; padding: 0 12px; font-size: 11px; }
 .budget-list { display: flex; flex: 1; flex-direction: column; gap: 11px; overflow: auto; max-height: 184px; padding: 3px 1px; }
-.budget-row { display: grid; grid-template-columns: minmax(76px, .75fr) minmax(72px, 1.15fr) auto; align-items: center; gap: 10px; }
+.budget-row { display: grid; grid-template-columns: minmax(104px, 1fr) minmax(42px, 1fr) auto; align-items: center; gap: 8px; }
+.budget-name { display: flex; min-width: 0; align-items: center; gap: 5px; }
 .budget-category { overflow: hidden; color: #39433c; font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .budget-progress { height: 5px; overflow: hidden; border-radius: 5px; background: #edf0eb; }
 .budget-progress span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--green); }
 .budget-progress span.over { background: var(--coral); }
 .budget-amounts { color: #7b857d; font: 10px var(--font-mono); text-align: right; white-space: nowrap; }
 .budget-amounts strong { color: var(--ink); font-weight: 500; }
-.budget-unset { display: flex; align-items: center; gap: 5px; color: #a0a8a1; font: 9px var(--font-mono); }
-.budget-unset button { padding: 0; border: 0; color: var(--green); background: none; font: inherit; cursor: pointer; }
+.budget-actions { display: flex; flex: 0 0 auto; gap: 3px; }
+.budget-actions button { padding: 2px 3px; border: 0; color: var(--green); background: none; font-size: 9px; cursor: pointer; }
+.budget-actions button:last-child { color: #a25645; }
 .budget-empty { margin: auto 0; color: #99a199; font-size: 11px; text-align: center; }
 
 .transactions { padding: 21px 22px 0; }
@@ -123,6 +125,9 @@ h2 { margin: 0; font: 700 16px/1.3 var(--font-display); letter-spacing: 0; }
 #visible-count { display: inline-grid; min-width: 21px; height: 20px; place-items: center; border-radius: 3px; color: var(--green); background: var(--mint); font: 10px var(--font-mono); }
 .filters { display: flex; gap: 7px; }
 .filters input, .filters select { height: 34px; }
+.filters input[type="date"] { width: 132px; padding: 0 7px; font: 10px var(--font-mono); }
+.clear-date-filter { height: 34px; padding: 0 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--green); background: white; font-size: 10px; }
+.clear-date-filter[hidden] { display: none; }
 .filters select { padding-right: 25px; }
 .search-field { position: relative; display: block; }
 .search-field input { width: 165px; padding-left: 28px; }
@@ -217,6 +222,7 @@ tbody tr:last-child td { border-bottom: 0; }
   .filters { display: grid; grid-template-columns: 1fr 1fr; }
   .search-field { grid-column: 1 / -1; }
   .filters select { width: 100%; }
+  .filters input[type="date"] { width: 100%; }
   .table-scroll { margin: 0 -13px; }
   table { min-width: 620px; }
   th:first-child, td:first-child { padding-left: 13px; }
