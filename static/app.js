@@ -1,7 +1,7 @@
 const monthPicker = document.querySelector("#month-picker");
 const colors = ["#176a50", "#e9795d", "#5688d8", "#e9b84b", "#8d68b1", "#4ca89c", "#dc9b4b"];
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const state = { expenses: [], summary: null, toastTimer: null, searchTimer: null, editingBudget: null };
+const state = { expenses: [], categories: [], summary: null, toastTimer: null, searchTimer: null, editingBudget: null };
 
 function localMonth(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -59,12 +59,14 @@ function expenseFilters() {
 async function refresh() {
   const month = monthPicker.value;
   try {
-    const [summary, expenses] = await Promise.all([
+    const [summary, expenses, categories] = await Promise.all([
       request(`/api/summary?month=${encodeURIComponent(month)}`),
       request(`/api/expenses?${expenseFilters()}`),
+      request("/api/categories"),
     ]);
     state.summary = summary;
     state.expenses = expenses;
+    state.categories = categories;
     renderSummary();
     renderBudgets();
     renderExpenses();
@@ -115,10 +117,7 @@ function renderBudgets() {
 
 function renderCategoryOptions() {
   const current = document.querySelector("#category-filter").value;
-  const categories = [...new Set([
-    ...state.summary.categories.map((item) => item.category),
-    ...state.expenses.map((item) => item.category),
-  ])].sort((a, b) => a.localeCompare(b));
+  const categories = state.categories;
   document.querySelector("#category-filter").innerHTML = '<option value="">All categories</option>' + categories
     .map((category) => `<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`).join("");
   if (categories.includes(current)) document.querySelector("#category-filter").value = current;
@@ -161,42 +160,42 @@ function drawChart() {
   const width = bounds.width;
   const height = bounds.height;
   const data = state.summary.categories.filter((item) => item.spent > 0).sort((a, b) => b.spent - a.spent);
+  const total = data.reduce((sum, item) => sum + item.spent, 0);
   const empty = document.querySelector("#chart-empty");
   empty.hidden = data.length > 0;
-  document.querySelector("#chart-legend").innerHTML = data.slice(0, 5).map((item, index) =>
-    `<span class="legend-item"><i class="legend-swatch" style="background:${colors[index % colors.length]}"></i>${escapeHTML(item.category)}</span>`
-  ).join("");
+  document.querySelector("#chart-legend").innerHTML = data.map((item, index) => {
+    const share = total > 0 ? (item.spent / total) * 100 : 0;
+    return `<span class="legend-item"><i class="legend-swatch" style="background:${colors[index % colors.length]}"></i><span class="legend-label" title="${escapeHTML(item.category)}">${escapeHTML(item.category)}</span><span class="legend-detail">${money.format(item.spent)} · ${share.toFixed(1)}%</span></span>`;
+  }).join("");
+  canvas.setAttribute("aria-label", data.length
+    ? `${selectedMonthLabel(state.summary.month)} spending: ${data.map((item) => `${item.category}, ${money.format(item.spent)}, ${((item.spent / total) * 100).toFixed(1)} percent`).join("; ")}. Total ${money.format(total)}.`
+    : "No spending recorded for this month.");
   if (!data.length) return;
 
-  const barHeight = 12;
-  const rowGap = 24;
-  const top = Math.max(6, (height - data.length * (barHeight + rowGap)) / 2);
-  const labelWidth = Math.min(108, Math.max(66, width * 0.29));
-  const valueWidth = 76;
-  const chartWidth = Math.max(20, width - labelWidth - valueWidth - 18);
-  const max = Math.max(...data.map((item) => item.spent));
-  context.font = '11px "DM Sans", sans-serif';
-  context.textBaseline = "middle";
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.min(width, height) / 2 - 5;
+  let angle = -Math.PI / 2;
   data.forEach((item, index) => {
-    const y = top + index * (barHeight + rowGap);
-    context.fillStyle = "#68746b";
-    context.textAlign = "left";
-    const label = item.category.length > 15 ? `${item.category.slice(0, 14)}…` : item.category;
-    context.fillText(label, 0, y + barHeight / 2);
-    context.fillStyle = "#f0f2ed";
+    const nextAngle = angle + (item.spent / total) * Math.PI * 2;
     context.beginPath();
-    context.roundRect(labelWidth, y, chartWidth, barHeight, 3);
-    context.fill();
+    context.arc(centerX, centerY, radius, angle, nextAngle);
+    context.arc(centerX, centerY, radius * 0.58, nextAngle, angle, true);
+    context.closePath();
     context.fillStyle = colors[index % colors.length];
-    context.beginPath();
-    context.roundRect(labelWidth, y, Math.max(4, chartWidth * (item.spent / max)), barHeight, 3);
     context.fill();
-    context.fillStyle = "#344038";
-    context.textAlign = "right";
-    context.font = '10px "DM Mono", monospace';
-    context.fillText(money.format(item.spent), width, y + barHeight / 2);
-    context.font = '11px "DM Sans", sans-serif';
+    angle = nextAngle;
   });
+
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "#26352d";
+  const totalLabel = money.format(total);
+  context.font = `700 ${totalLabel.length > 9 ? 12 : 15}px "Manrope", sans-serif`;
+  context.fillText(totalLabel, centerX, centerY - 5, radius * 1.02);
+  context.fillStyle = "#87928a";
+  context.font = '9px "DM Mono", monospace';
+  context.fillText("TOTAL", centerX, centerY + 12);
 }
 
 function openExpenseDialog(expense = null) {

@@ -156,6 +156,14 @@ def create_app(database_path: str | Path | None = None) -> FastAPI:
             for row in rows
         ]
 
+    @app.get("/api/categories")
+    def list_categories() -> list[str]:
+        with connection() as db:
+            rows = db.execute(
+                "SELECT category FROM expenses UNION SELECT category FROM budgets ORDER BY category"
+            ).fetchall()
+        return [row["category"] for row in rows]
+
     @app.post("/api/expenses", status_code=201)
     def add_expense(expense: ExpenseInput) -> dict:
         category = _clean_category(expense.category)

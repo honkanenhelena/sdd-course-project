@@ -61,12 +61,13 @@ def test_filters_budgets_and_month_isolation(tmp_path):
             json={
                 "amount": 9,
                 "date": "2026-09-10",
-                "category": "Transit",
+                "category": "Taxi",
                 "necessity": False,
                 "note": "Taxi",
             },
         )
 
+        assert client.get("/api/categories").json() == ["Taxi", "Transit"]
         assert len(client.get("/api/expenses", params={"month": "2026-10", "necessity": True}).json()) == 1
         assert len(client.get("/api/expenses", params={"search": "train"}).json()) == 1
         assert len(client.get("/api/expenses", params={"start_date": "2026-10-10", "end_date": "2026-10-10"}).json()) == 1

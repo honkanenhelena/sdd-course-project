@@ -17,3 +17,16 @@ Prompt: There are some parts missing, I wanted filtering by date, I need the bud
 Expected answer/result: Fixes to all requested issues with a possibility of an additional feature by the AI
 
 Outcome of prompt: A very clean fix to all of the issues listed, date filtering was added with an additional clear dates button that was not asked for but nice to have. The budgets were also fixed to only show categories with budgets and now budgets with a value of 0 could be added. One thing however which was noticed when testing this version was that the selection of category when adding an expense did not suggest existing categories, but the user instead had to remember them and make sure the letters were capitalized the same. One obvious missing part was also the visual spending chart which should show the different categories and their respective parts of the total. 
+
+Prompt 3
+
+Prompt: The category selection when creating a new expense should recommend existing ones. There is also still no visual spending chart with a visual representation of the different categories and their parts of the total. 
+
+Expected answer/result: It fixes what was asked of it and the final result is an application which fills all of the criteria. 
+
+Outcome of the prompt: Both requested fixes were completed and nothing else unnecessary was added. The application now fulfills the requirements set for it so it was deemed to be the correct time to stop the vibe coded part. 
+
+
+Summary of vibe coded version:
+
+The total active time working with the vibe coded version and testing the produced versions ~1.5 hours. The copilot Chatgpt luna 6 model received 3 prompts and with these it completed 7/7 requested items. 
