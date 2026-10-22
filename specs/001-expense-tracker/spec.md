@@ -8,6 +8,14 @@
 
 **Input**: User description: "An expense tracker that helps the user see what their money goes to and helps them cut costs. Users can add, edit, delete, and filter expenses; see monthly summaries and category charts; and set monthly category budgets. Invalid amounts and dates must be rejected, required fields enforced, and data saved consistently for ongoing monthly use."
 
+## Clarifications
+
+### Session 2026-10-22
+
+- Q: Will this tracker be a private single-user app, or will it be accessible to multiple users over a network? → A: Private single-user app with no accounts or sign-in.
+- Q: Should users be able to export saved expenses and budgets as a backup? → A: No export or backup.
+- Q: Which currency should the tracker use for all expenses and budgets? → A: EUR.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Record and Maintain Expenses (Priority: P1)
@@ -75,7 +83,7 @@ A user sets a spending limit for a category in a month and checks how much of th
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST allow a user to record an expense with an amount, date, category, necessity choice, and optional note.
+- **FR-001**: The system MUST allow a user to record an expense with an amount in EUR, date, category, necessity choice, and optional note.
 - **FR-002**: The system MUST require an amount, a valid date, and a category before saving an expense.
 - **FR-003**: The system MUST reject zero or negative expense amounts, amounts with more than two fractional digits, and dates that are malformed or impossible calendar dates. Rejected data MUST NOT be saved.
 - **FR-004**: The system MUST allow a user to edit or delete a saved expense, and changes MUST be reflected in all spending views.
@@ -106,8 +114,8 @@ A user sets a spending limit for a category in a month and checks how much of th
 
 ## Assumptions
 
-- The tracker is used by one user; accounts, sharing, and multi-user permissions are outside this feature's scope.
-- All expenses and budgets use one consistent currency; currency conversion and multi-currency reporting are out of scope.
+- The tracker is a private single-user app with no accounts or sign-in; network access, sharing, and multi-user permissions are outside this feature's scope.
+- All expenses and budgets use EUR; currency conversion and multi-currency reporting are out of scope.
 - The application provides a fixed set of common purchase categories. Creating or renaming categories is out of scope for this feature.
 - A budget is specific to one category and one calendar month; it does not automatically carry into other months.
 - Expense amounts and budgets must be greater than zero and may have at most two fractional digits.

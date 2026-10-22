@@ -24,3 +24,37 @@ Prompt: /speckit-specify An expense tracker that helps the user see what their m
 Expected outcome/result: A new branch with the specifications of the application in a file. I also expect a checklist of clarifications that are needed after the prompt. 
 
 Outcome of prompt: It did not create a branch so did that by hand and named it the same as the created folder. There were no clarifications marked but still performed a check on the outcome (spec.md file) and found that all requirements seem to have been logged successfully.
+
+
+
+Prompt 3.1
+
+Prompt: /speckit-clarify
+
+Expected outcome/result: The chat will ask for clarifications regarding the spec one by one and give options. 
+
+Outcome of prompt: Question about the user scope being about if the tracker will be a private single-user app or will it have multiple users. It also gave options A B C and short own answer, with A being single user no login, B single user network login, C being multiple users and short being one of my own. 
+
+Prompt 3.2 
+
+Prompt: A
+
+Expected outcome/result: For it to log my choice and to ask another question.
+
+Outcome of prompt: It logged this and asked about a possible export of the expenses for making a backup, with the choices being A for no export, B for user-triggered CSV exports and C for automatic periodic backups.
+
+Prompt 3.3
+
+Prompt: A
+
+Expected outcome/result: It logs this answer and asks another clarifying question.
+
+Outcome of prompt: The answer was loggesd and the previous one was also confirmed as logged and then it asked about the currency to use, with suggested being for its recommended EURO choice, and short answer otherwise.
+
+Prompt 3.4
+
+Prompt: suggested
+
+Expected outcome/result: For it to log this aswell and to ask another question about clarifications.
+
+Outcome of prompt: It finished the clarifications and showed that the requirements still all passed with no checkbox states changed. It also recommended /speckit-plan as the next command.
