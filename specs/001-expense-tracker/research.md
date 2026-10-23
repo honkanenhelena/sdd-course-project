@@ -48,7 +48,7 @@
 
 - The local application supports one user and one currency (EUR), without accounts, sharing, import/export, backup, or synchronization.
 - The initial category labels are the fixed list above; adding categories is a later specification change.
-- The application is optimized for normal personal use on one local machine, with up to 10,000 expense records as an initial planning test dataset. Common list, summary, and budget views should load within one second on the development machine for that dataset.
+- The application is for normal personal use on one local machine. No dataset-size or response-time target is in scope.
 - Input and display use the decimal point as the EUR fractional separator; the interface displays EUR values with an explicit `EUR`/`€` marker. Locale-specific formatting is not required for the first version.
 - No authentication is provided. Loopback binding, Host validation, same-origin writes, and restrictive static serving are part of the local-only boundary, not a substitute for operating-system account security.
 

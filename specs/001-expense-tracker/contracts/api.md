@@ -56,7 +56,7 @@ Returns expenses ordered by date descending, then id descending. Optional query 
 - `category`: one fixed category slug
 - `necessity`: `true` or `false`
 
-All supplied filters apply together. If `from` is after `to`, return `422` with a date-range error. With no filters, return all expenses.
+All supplied filters apply together. If `from` is after `to`, return `422` with the response `{"detail":"The start date must be on or before the end date."}`. No expense results are returned for this invalid range. With no filters, return all expenses.
 
 ### `POST /api/expenses`
 

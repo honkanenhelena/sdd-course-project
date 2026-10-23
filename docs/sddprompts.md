@@ -75,6 +75,41 @@ Prompt: /speckit-tasks
 
 Expected outcome/result: A task file with the tasks it sees as needed to be done with tests for them. This tasks file will be important for after the prompt so that it can be reviewed so that I can confirm that the AI has understood the task at hand correctly.
 
-Outcome of prompt: Exactly as expected it created tasks.md with 25 tasks with user stories and tests. Checked the tasks.md file and it seemed to have tests for each task and the user stories were also involved in the tasks. The tests were also linked with the user stories well.
+Outcome of prompt: Exactly as expected it created tasks.md with 25 tasks with user stories and tests. Checked the tasks.md file and it seemed to have tests for each task and the user stories were also involved in the tasks. The tests were also linked with the user stories well. It recommended speckit-implement next.
 
+Prompt 6
+
+Prompt: /speckit-analyze
+
+Expected outcome/result: A checklist for inconsistencies between the created documents so that these can be solved before the development starts.
+
+Outcome of prompt: A list with both a specification analysis report and a coverage summary. There are some now obvious problems and hallucinations in the implementation, so these will be fixed before starting development as planned. One example is C2 which is a performance requirement which it has implemented itself and is not required nor in scope. 
+
+
+Prompt 7
+
+Prompt: Apply the following fixes to the files: I1, a reversed date range needs to return 422 with an error message. A1, replace SC-001 with the requirement "a first-time user can add an expense to the app without further instructions". C1, add the implementation and test tasks for GET/api/categories. U1, List the category slugs in the spec and T006. C2, This was not apart of scope so remove the performance target from the plan. U2, use pip_audit -r requirements.txt
+
+Expected outcome/result: A fix to ONLY the requested parts and a confirmation on what was changed.
+
+Outcome of prompt: As expected it applied the requested fixes and checked these according to the tasks.
+
+Prompt 8
+
+Prompt: /sepckit-analyze
+
+Expected outcome/result: A clean run with no items in the specification analysis report and no ambiguities.
+
+Outcome of prompt: As expected the fixes have solved the issues and there were no new issues found, so the repo is ready for development.
+
+
+
+
+Prompt 8
+
+Prompt: 
+
+Expected outcome/result:
+
+Outcome of prompt:
 

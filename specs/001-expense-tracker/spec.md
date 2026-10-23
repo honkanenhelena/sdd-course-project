@@ -32,6 +32,7 @@ A user records each purchase with its amount, date, category, whether it was a n
 2. **Given** an existing expense, **When** the user edits and saves its amount, date, category, necessity choice, or note, **Then** the list shows the updated values.
 3. **Given** an existing expense, **When** the user confirms deletion, **Then** it is removed from the list and no longer contributes to spending totals.
 4. **Given** a required field is missing or the amount or date is invalid, **When** the user attempts to save the expense, **Then** the user is told what must be corrected and no invalid record is saved.
+5. **Given** the user opens the category choices, **When** the list is displayed, **Then** it contains Housing (`housing`), Utilities (`utilities`), Groceries (`groceries`), Transport (`transport`), Health (`health`), Dining (`dining`), Shopping (`shopping`), Entertainment (`entertainment`), and Other (`other`), with no category-creation or rename controls.
 
 ---
 
@@ -72,7 +73,7 @@ A user sets a spending limit for a category in a month and checks how much of th
 - Missing amount, date, or category is rejected without saving a partial expense.
 - Zero or negative amounts and amounts with more than two fractional digits are rejected.
 - Impossible calendar dates and malformed dates are rejected.
-- A date range with its start after its end returns no matching expenses and is clearly identified as an invalid range.
+- A date range with its start after its end is rejected with HTTP 422 and a clear date-range error message; no expense results are returned.
 - Combining filters returns only records that satisfy all selected filters; an unset filter does not restrict results.
 - Deleting or editing an expense updates the affected monthly totals, chart, and budget progress.
 - A category with no expenses still appears in budget progress with zero spent.
@@ -94,6 +95,7 @@ A user sets a spending limit for a category in a month and checks how much of th
 - **FR-009**: The system MUST show each budget's amount spent, amount remaining or exceeded, and progress relative to its limit for that category and month.
 - **FR-010**: The system MUST preserve expenses and monthly category budgets when the user leaves and returns, including when viewing a different month.
 - **FR-011**: The system MUST provide clear feedback when input is missing, invalid, or inconsistent, without saving invalid data.
+- **FR-012**: The system MUST offer these fixed category choices and slugs: Housing (`housing`), Utilities (`utilities`), Groceries (`groceries`), Transport (`transport`), Health (`health`), Dining (`dining`), Shopping (`shopping`), Entertainment (`entertainment`), and Other (`other`). Users MUST NOT be able to create or rename categories.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -106,7 +108,7 @@ A user sets a spending limit for a category in a month and checks how much of th
 
 ### Measurable Outcomes
 
-- **SC-001**: In a usability test, at least 90% of first-time users can record a valid expense and confirm it appears in the list without assistance.
+- **SC-001**: A first-time user can add an expense to the app without further instructions.
 - **SC-002**: For every tested combination of date, category, and necessity filters, the results contain exactly the matching expenses and no non-matching expenses.
 - **SC-003**: For every tested month, the displayed total and category amounts equal the sum of the saved expenses in that month, and the chart shows the same category amounts.
 - **SC-004**: 100% of tested missing required fields, zero or negative amounts, over-precision amounts, malformed dates, and impossible dates are rejected without creating or changing a saved expense.
@@ -116,7 +118,7 @@ A user sets a spending limit for a category in a month and checks how much of th
 
 - The tracker is a private single-user app with no accounts or sign-in; network access, sharing, and multi-user permissions are outside this feature's scope.
 - All expenses and budgets use EUR; currency conversion and multi-currency reporting are out of scope.
-- The application provides a fixed set of common purchase categories. Creating or renaming categories is out of scope for this feature.
+- The fixed purchase categories are Housing (`housing`), Utilities (`utilities`), Groceries (`groceries`), Transport (`transport`), Health (`health`), Dining (`dining`), Shopping (`shopping`), Entertainment (`entertainment`), and Other (`other`). Creating or renaming categories is out of scope for this feature.
 - A budget is specific to one category and one calendar month; it does not automatically carry into other months.
 - Expense amounts and budgets must be greater than zero and may have at most two fractional digits.
 - Dates are validated as real calendar dates. Future dates are not otherwise restricted.

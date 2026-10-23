@@ -25,15 +25,14 @@ JavaScript, with pytest coverage and no frontend framework.
 
 **Project Type**: Single-project web application
 
-**Performance Goals**: Common list, monthly summary, and budget views complete within one second
-on the development machine for a 10,000-expense test dataset.
+**Performance Goals**: No specific performance target is in scope.
 
 **Constraints**: One user; no sign-in, network exposure, export, backup, or synchronization.
 Use EUR, fixed categories, exact cents, validated ISO dates, and server-side input validation.
 No frontend framework or chart dependency. Mutating requests are same-origin only.
 
-**Scale/Scope**: One local user and an initial planning dataset of up to 10,000 expenses; one
-FastAPI process, one SQLite database, one HTML page, and expense, summary, and budget flows.
+**Scale/Scope**: One local user; one FastAPI process, one SQLite database, one HTML page, and
+expense, summary, and budget flows. No dataset-size target is in scope.
 
 ## Constitution Check
 
