@@ -49,7 +49,7 @@ Prompt: A
 
 Expected outcome/result: It logs this answer and asks another clarifying question.
 
-Outcome of prompt: The answer was loggesd and the previous one was also confirmed as logged and then it asked about the currency to use, with suggested being for its recommended EURO choice, and short answer otherwise.
+Outcome of prompt: The answer was logged and the previous one was also confirmed as logged and then it asked about the currency to use, with suggested being for its recommended EURO choice, and short answer otherwise.
 
 Prompt 3.4
 
@@ -58,3 +58,14 @@ Prompt: suggested
 Expected outcome/result: For it to log this aswell and to ask another question about clarifications.
 
 Outcome of prompt: It finished the clarifications and showed that the requirements still all passed with no checkbox states changed. It also recommended /speckit-plan as the next command.
+
+
+Prompt 4
+
+Prompt: /speckit-plan Use the defined stack in the constitution. Keep the implementation simple with one FastAPI app, a SQLite database and a frontend made with HTML and JS.
+
+Expected outcome/result: An updated plan file for the model to work from. Also expect it to list the stack it will use and that it will match the listed one.
+
+Outcome of prompt: The prompt researched the web for simple designs with a subagent and it then udpated the plan with the information it received along with some other .md files such as quickstart and research. It also recommended the next step which is speckit-tasks
+
+
