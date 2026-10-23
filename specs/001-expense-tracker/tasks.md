@@ -21,11 +21,11 @@
 
 **Purpose**: Provide the local application, persistent database, shared validation, and isolated test fixture required by every story.
 
-- [ ] T003 Create the FastAPI app factory and static-file mount in `app.py`; bind the documented runner to `127.0.0.1`, accept only loopback Host values, and require same-origin Origin values for browser mutation requests.
-- [ ] T004 Initialize the stable application-relative SQLite database and implement per-request connections, parameterized access, explicit write transactions, rollback on failure, and connection closing in `app.py`.
-- [ ] T005 Create the `expenses` and `monthly_budgets` schema with the data-model constraints in `app.py`, including positive integer cents, required fields, a boolean necessity domain, and the unique `(month, category)` budget key.
-- [ ] T006 Add the fixed category list and shared validators in `app.py`; enforce these exact category slugs: `housing`, `utilities`, `groceries`, `transport`, `health`, `dining`, `shopping`, `entertainment`, and `other`; finite positive EUR values with at most two fractional digits; real ISO `YYYY-MM-DD` dates; valid `YYYY-MM` months; and necessity values that are exactly true or false. Preserve the data-model note constraint verbatim: `note` is optional; empty text is valid and is not truncated.
-- [ ] T007 Create a pytest fixture in `tests/test_app.py` that builds the app with a fresh `tmp_path` database and provides a FastAPI `TestClient` without touching the user's `expenses.db`.
+- [X] T003 Create the FastAPI app factory and static-file mount in `app.py`; bind the documented runner to `127.0.0.1`, accept only loopback Host values, and require same-origin Origin values for browser mutation requests.
+- [X] T004 Initialize the stable application-relative SQLite database and implement per-request connections, parameterized access, explicit write transactions, rollback on failure, and connection closing in `app.py`.
+- [X] T005 Create the `expenses` and `monthly_budgets` schema with the data-model constraints in `app.py`, including positive integer cents, required fields, a boolean necessity domain, and the unique `(month, category)` budget key.
+- [X] T006 Add the fixed category list and shared validators in `app.py`; enforce these exact category slugs: `housing`, `utilities`, `groceries`, `transport`, `health`, `dining`, `shopping`, `entertainment`, and `other`; finite positive EUR values with at most two fractional digits; real ISO `YYYY-MM-DD` dates; valid `YYYY-MM` months; and necessity values that are exactly true or false. Preserve the data-model note constraint verbatim: `note` is optional; empty text is valid and is not truncated.
+- [X] T007 Create a pytest fixture in `tests/test_app.py` that builds the app with a fresh `tmp_path` database and provides a FastAPI `TestClient` without touching the user's `expenses.db`.
 
 **Checkpoint**: App startup, schema creation, shared validation, and isolated test setup are ready before story work begins.
 

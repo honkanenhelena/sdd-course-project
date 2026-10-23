@@ -119,7 +119,7 @@ Prompt 9
 
 Prompt: /speckit-implement Implement the second phase from the tasks.md file and stop after it is complete.
 
-Expected oucome/result: 
+Expected oucome/result: A complete phase 2 with the tasks for it checked of with no excessive work done.
 
-Outcome of prompt:
+Outcome of prompt: It completed this but only after having some trouble with a command about Starlette (FastAPI), but it did fix this and the tasks were checked off in the tasks file.
 
