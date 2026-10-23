@@ -123,3 +123,11 @@ Expected oucome/result: A complete phase 2 with the tasks for it checked of with
 
 Outcome of prompt: It completed this but only after having some trouble with a command about Starlette (FastAPI), but it did fix this and the tasks were checked off in the tasks file.
 
+
+Prompt 10
+
+Prompt: /speckit-implement Implement phase three of the tasks.md and stop after phase 3 is complete.
+
+Expected oucome/result: A complete phase 3 with the first user story complete and the appropriate tests for it made and completed.
+
+Outcome of prompt: A complete expense CRUD MVP with the appropriate tests done and passed. It did fail the tests 3 times but after the last fix it completed with 4 passed and with 1 warning, but this was about the phase 2 Starlette depreceation. 

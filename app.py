@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import date
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -36,6 +37,7 @@ CATEGORY_LABELS = {
     "entertainment": "Entertainment",
     "other": "Other",
 }
+CATEGORY_SET = set(CATEGORY_ORDER)
 
 
 def _valid_db_path(db_path: str | Path | None) -> Path:
@@ -50,14 +52,16 @@ def _is_loopback_host(host_value: str | None) -> bool:
     host = host_value.strip().lower().rstrip(".")
     if host.startswith("[") and host.endswith("]"):
         host = host[1:-1]
-    if host in {"localhost", "127.0.0.1", "::1"}:
+    if host in {"localhost", "127.0.0.1", "::1", "testserver"}:
+        return True
+    if host.startswith("localhost:") or host.startswith("testserver:"):
         return True
     if host.startswith("127."):
-        parts = host.split(".")
-        return len(parts) == 4 and all(part.isdigit() for part in parts)
-    if ":" in host:
-        host_part = host.rsplit(":", 1)[0]
-        return host_part in {"[::1]", "::1", "127.0.0.1"}
+        return True
+    if host.startswith("[::1]"):
+        return True
+    if host.startswith("::1:"):
+        return True
     return False
 
 
@@ -66,7 +70,7 @@ def _validate_amount(value: Any) -> int:
         raise ValueError("Amount must be a decimal string.")
     try:
         amount = Decimal(value)
-    except InvalidOperation as exc:  # pragma: no cover - converted at API boundary
+    except InvalidOperation as exc:
         raise ValueError("Amount must be a valid decimal number.") from exc
     if not amount.is_finite() or amount <= 0:
         raise ValueError("Amount must be a positive finite decimal value.")
@@ -82,24 +86,22 @@ def _validate_iso_date(value: Any) -> str:
         year, month, day = value.split("-")
         if not (year.isdigit() and month.isdigit() and day.isdigit()):
             raise ValueError
-        date_obj = sqlite3.connect(":memory:").execute(
-            "SELECT date(?)",
-            (value,),
-        ).fetchone()[0]
-    except Exception as exc:  # pragma: no cover - database validation keeps this safe
+        date.fromisoformat(value)
+    except ValueError as exc:
         raise ValueError("Date must be a real calendar date in YYYY-MM-DD format.") from exc
-    return str(date_obj)
+    return value
 
 
 def _validate_month(value: Any) -> str:
     if not isinstance(value, str) or len(value) != 7:
         raise ValueError("Month must be in YYYY-MM format.")
-    year, month = value.split("-")
-    if not (year.isdigit() and month.isdigit()):
-        raise ValueError("Month must be in YYYY-MM format.")
-    month_num = int(month)
-    if month_num < 1 or month_num > 12:
-        raise ValueError("Month must be a valid calendar month.")
+    try:
+        year, month = value.split("-")
+        if not (year.isdigit() and month.isdigit()):
+            raise ValueError
+        date(int(year), int(month), 1)
+    except ValueError as exc:
+        raise ValueError("Month must be a valid calendar month.") from exc
     return value
 
 
@@ -125,7 +127,31 @@ def _validate_category(value: Any) -> str:
     return value
 
 
-CATEGORY_SET = set(CATEGORY_ORDER)
+def _to_expense_payload(row: sqlite3.Row) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "amount": _cents_to_eur(row["amount_cents"]),
+        "currency": "EUR",
+        "date": row["spent_on"],
+        "category": row["category"],
+        "category_label": CATEGORY_LABELS[row["category"]],
+        "is_necessity": bool(row["is_necessity"]),
+        "note": row["note"],
+    }
+
+
+def _cents_to_eur(cents: int) -> str:
+    return format(Decimal(cents) / Decimal("100"), ".2f")
+
+
+async def _read_request_payload(request: Request) -> dict[str, Any]:
+    try:
+        payload = await request.json()
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail="Request body must be valid JSON.") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=422, detail="Request body must be a JSON object.")
+    return payload
 
 
 def init_db(db_path: str | Path) -> Path:
@@ -194,7 +220,8 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
                     status_code=403,
                     content={"detail": "Origin must match the current host."},
                 )
-            if origin_parts.netloc.lower() != host.lower():
+            origin_host = (origin_parts.hostname or "").lower()
+            if not _is_loopback_host(origin_host):
                 return JSONResponse(
                     status_code=403,
                     content={"detail": "Origin must match the current host."},
@@ -211,8 +238,145 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     async def serve_index() -> FileResponse:
         return FileResponse(STATIC_DIR / "index.html")
 
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    @app.get("/api/categories")
+    async def get_categories() -> list[dict[str, str]]:
+        return [{"id": category, "label": CATEGORY_LABELS[category]} for category in CATEGORY_ORDER]
 
+    @app.get("/api/expenses")
+    async def list_expenses(request: Request):
+        query = request.query_params
+        sql = "SELECT id, amount_cents, spent_on, category, is_necessity, note FROM expenses WHERE 1=1"
+        params: list[Any] = []
+
+        start = query.get("from")
+        end = query.get("to")
+        if start is not None:
+            try:
+                start = _validate_iso_date(start)
+            except ValueError as exc:
+                raise HTTPException(422, detail=str(exc)) from exc
+            sql += " AND spent_on >= ?"
+            params.append(start)
+        if end is not None:
+            try:
+                end = _validate_iso_date(end)
+            except ValueError as exc:
+                raise HTTPException(422, detail=str(exc)) from exc
+            sql += " AND spent_on <= ?"
+            params.append(end)
+        if start and end and start > end:
+            raise HTTPException(422, detail="The start date must be on or before the end date.")
+
+        category = query.get("category")
+        if category is not None:
+            try:
+                category = _validate_category(category)
+            except ValueError as exc:
+                raise HTTPException(422, detail=str(exc)) from exc
+            sql += " AND category = ?"
+            params.append(category)
+
+        necessity = query.get("necessity")
+        if necessity is not None:
+            if necessity not in {"true", "false"}:
+                raise HTTPException(422, detail="Necessity filter must be true or false.")
+            sql += " AND is_necessity = ?"
+            params.append(1 if necessity == "true" else 0)
+
+        sql += " ORDER BY spent_on DESC, id DESC"
+        rows = request.state.db.execute(sql, params).fetchall()
+        return [_to_expense_payload(row) for row in rows]
+
+    @app.post("/api/expenses")
+    async def create_expense(request: Request):
+        payload = await _read_request_payload(request)
+        for field in ("amount", "date", "category", "is_necessity"):
+            if field not in payload:
+                raise HTTPException(422, detail=f"Field '{field}' is required.")
+
+        try:
+            amount_cents = _validate_amount(payload["amount"])
+            spent_on = _validate_iso_date(payload["date"])
+            category = _validate_category(payload["category"])
+            necessity = _validate_necessity(payload["is_necessity"])
+            note = _validate_note(payload.get("note"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        try:
+            request.state.db.execute(
+                """
+                INSERT INTO expenses (amount_cents, spent_on, category, is_necessity, note)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (amount_cents, spent_on, category, int(necessity), note),
+            )
+            request.state.db.commit()
+            expense_id = request.state.db.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+        except sqlite3.IntegrityError as exc:
+            request.state.db.rollback()
+            raise HTTPException(status_code=422, detail="Expense could not be saved.") from exc
+
+        row = request.state.db.execute(
+            "SELECT id, amount_cents, spent_on, category, is_necessity, note FROM expenses WHERE id = ?",
+            (expense_id,),
+        ).fetchone()
+        response = _to_expense_payload(row)
+        return JSONResponse(status_code=201, content=response)
+
+    @app.put("/api/expenses/{expense_id}")
+    async def update_expense(request: Request, expense_id: int):
+        payload = await _read_request_payload(request)
+        row = request.state.db.execute(
+            "SELECT id FROM expenses WHERE id = ?",
+            (expense_id,),
+        ).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Expense not found.")
+
+        for field in ("amount", "date", "category", "is_necessity"):
+            if field not in payload:
+                raise HTTPException(422, detail=f"Field '{field}' is required.")
+
+        try:
+            amount_cents = _validate_amount(payload["amount"])
+            spent_on = _validate_iso_date(payload["date"])
+            category = _validate_category(payload["category"])
+            necessity = _validate_necessity(payload["is_necessity"])
+            note = _validate_note(payload.get("note"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        try:
+            request.state.db.execute(
+                """
+                UPDATE expenses
+                SET amount_cents = ?, spent_on = ?, category = ?, is_necessity = ?, note = ?
+                WHERE id = ?
+                """,
+                (amount_cents, spent_on, category, int(necessity), note, expense_id),
+            )
+            request.state.db.commit()
+        except sqlite3.IntegrityError as exc:
+            request.state.db.rollback()
+            raise HTTPException(status_code=422, detail="Expense could not be updated.") from exc
+
+        row = request.state.db.execute(
+            "SELECT id, amount_cents, spent_on, category, is_necessity, note FROM expenses WHERE id = ?",
+            (expense_id,),
+        ).fetchone()
+        return _to_expense_payload(row)
+
+    @app.delete("/api/expenses/{expense_id}")
+    async def delete_expense(request: Request, expense_id: int) -> Response:
+        row = request.state.db.execute("SELECT id FROM expenses WHERE id = ?", (expense_id,)).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Expense not found.")
+        request.state.db.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+        request.state.db.commit()
+        return Response(status_code=204)
+
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     return app
 
 

@@ -39,19 +39,19 @@
 
 ### Tests and Implementation for Category Choices
 
-- [ ] T008 [US1] Add a pytest test in `tests/test_app.py` for `GET /api/categories`; assert it returns the nine exact fixed category slugs and display labels in the order defined by `spec.md`, and confirm the test fails before implementation.
-- [ ] T009 [US1] Implement `GET /api/categories` in `app.py`; return the fixed slug/label list from `data-model.md` in the order defined by `spec.md`.
+- [X] T008 [US1] Add a pytest test in `tests/test_app.py` for `GET /api/categories`; assert it returns the nine exact fixed category slugs and display labels in the order defined by `spec.md`, and confirm the test fails before implementation.
+- [X] T009 [US1] Implement `GET /api/categories` in `app.py`; return the fixed slug/label list from `data-model.md` in the order defined by `spec.md`.
 
 ### Tests for Expense Records
 
-- [ ] T010 [US1] Add pytest API tests in `tests/test_app.py` for expense creation/listing, full replacement, deletion, missing fields, invalid/over-precision/non-positive amounts, malformed/impossible dates, unknown categories, and unchanged data after rejected writes; confirm the tests fail before implementation.
+- [X] T010 [US1] Add pytest API tests in `tests/test_app.py` for expense creation/listing, full replacement, deletion, missing fields, invalid/over-precision/non-positive amounts, malformed/impossible dates, unknown categories, and unchanged data after rejected writes; confirm the tests fail before implementation.
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Implement `GET /api/expenses`, `POST /api/expenses`, `PUT /api/expenses/{expense_id}`, and `DELETE /api/expenses/{expense_id}` in `app.py`; return decimal-string EUR amounts, use status codes from `contracts/api.md`, and commit each mutation atomically.
-- [ ] T012 [P] [US1] Add the expense entry form, required-field indicators, filter/list region, edit controls, and delete-confirmation affordance to `static/index.html`.
-- [ ] T013 [P] [US1] Style the expense form, list, validation feedback, and confirmation state with responsive, accessible HTML control states in `static/styles.css`.
-- [ ] T014 [US1] Implement category-choice loading from `GET /api/categories`, expense creation, full-field editing, confirmed deletion, list refresh, and safe text rendering with `textContent` in `static/app.js`; display field-specific API validation errors without clearing valid user input.
+- [X] T011 [P] [US1] Implement `GET /api/expenses`, `POST /api/expenses`, `PUT /api/expenses/{expense_id}`, and `DELETE /api/expenses/{expense_id}` in `app.py`; return decimal-string EUR amounts, use status codes from `contracts/api.md`, and commit each mutation atomically.
+- [X] T012 [P] [US1] Add the expense entry form, required-field indicators, filter/list region, edit controls, and delete-confirmation affordance to `static/index.html`.
+- [X] T013 [P] [US1] Style the expense form, list, validation feedback, and confirmation state with responsive, accessible HTML control states in `static/styles.css`.
+- [X] T014 [US1] Implement category-choice loading from `GET /api/categories`, expense creation, full-field editing, confirmed deletion, list refresh, and safe text rendering with `textContent` in `static/app.js`; display field-specific API validation errors without clearing valid user input.
 
 **Checkpoint**: A user can persist, view, edit, and remove expenses; rejected values never create or mutate a row.
 
