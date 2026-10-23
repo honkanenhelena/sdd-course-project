@@ -1,0 +1,180 @@
+:root {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-border: #dfe6f1;
+  --text: #1f2937;
+  --muted: #5b6475;
+  --accent: #2b6cb0;
+  --accent-strong: #1d4f8f;
+  --success: #2f855a;
+  --danger: #b42318;
+  --shadow: rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.topbar {
+  margin-bottom: 1.5rem;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.panel h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.field-grid.compact {
+  align-items: end;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+label span {
+  font-weight: 600;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  background: #fff;
+  color: var(--text);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(43, 108, 176, 0.2);
+  border-color: var(--accent);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.actions {
+  margin-top: 1rem;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.75rem 1.2rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+.form-feedback {
+  min-height: 1.2rem;
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  border: 1px solid var(--panel-border);
+  background: #f8fbff;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.summary-card p {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+}
+
+.summary-card strong {
+  font-size: clamp(1.5rem, 2vw, 2.2rem);
+}
+
+.expense-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.expense-list li {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: #fafcff;
+}
+
+.empty-state {
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .app-shell {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .panel {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <h1>Expense Tracker</h1>
+      </header>
+
+      <section class="panel" aria-labelledby="expense-form-heading">
+        <h2 id="expense-form-heading">Add expense</h2>
+        <form id="expense-form" novalidate>
+          <div class="field-grid">
+            <label>
+              <span>Date</span>
+              <input type="date" name="date" />
+            </label>
+            <label>
+              <span>Category</span>
+              <select name="category">
+                <option value="">Select a category</option>
+                <option value="housing">Housing</option>
+                <option value="utilities">Utilities</option>
+                <option value="groceries">Groceries</option>
+                <option value="transport">Transport</option>
+                <option value="health">Health</option>
+                <option value="dining">Dining</option>
+                <option value="shopping">Shopping</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              <span>Amount (€)</span>
+              <input type="number" name="amount" min="0.01" step="0.01" placeholder="0.00" />
+            </label>
+            <label>
+              <span>Necessity</span>
+              <select name="necessity">
+                <option value="">Select</option>
+                <option value="true">Essential</option>
+                <option value="false">Optional</option>
+              </select>
+            </label>
+            <label class="full-width">
+              <span>Note</span>
+              <textarea name="note" rows="2" placeholder="Optional description"></textarea>
+            </label>
+          </div>
+          <div class="actions">
+            <button type="submit">Save expense</button>
+          </div>
+          <p class="form-feedback" id="expense-form-feedback" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="summary-heading">
+        <h2 id="summary-heading">Monthly summary</h2>
+        <div class="filters">
+          <label>
+            <span>Month</span>
+            <input type="month" name="summary-month" />
+          </label>
+          <label>
+            <span>From</span>
+            <input type="date" name="from-date" />
+          </label>
+          <label>
+            <span>To</span>
+            <input type="date" name="to-date" />
+          </label>
+        </div>
+        <div class="summary-card">
+          <p>Monthly total</p>
+          <strong id="monthly-total">€0.00</strong>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="budget-heading">
+        <h2 id="budget-heading">Budgets</h2>
+        <form id="budget-form" novalidate>
+          <div class="field-grid compact">
+            <label>
+              <span>Month</span>
+              <input type="month" name="budget-month" />
+            </label>
+            <label>
+              <span>Category</span>
+              <select name="budget-category">
+                <option value="">Select</option>
+                <option value="housing">Housing</option>
+                <option value="utilities">Utilities</option>
+                <option value="groceries">Groceries</option>
+                <option value="transport">Transport</option>
+                <option value="health">Health</option>
+                <option value="dining">Dining</option>
+                <option value="shopping">Shopping</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              <span>Limit (€)</span>
+              <input type="number" name="budget-limit" min="0.01" step="0.01" placeholder="0.00" />
+            </label>
+          </div>
+          <div class="actions">
+            <button type="submit">Save budget</button>
+          </div>
+          <p class="form-feedback" id="budget-form-feedback" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="expenses-heading">
+        <h2 id="expenses-heading">Recent expenses</h2>
+        <ul id="expense-list" class="expense-list">
+          <li class="empty-state">No expenses yet.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

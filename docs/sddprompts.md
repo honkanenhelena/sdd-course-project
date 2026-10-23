@@ -107,9 +107,19 @@ Outcome of prompt: As expected the fixes have solved the issues and there were n
 
 Prompt 8
 
-Prompt: 
+Prompt: /speckit-implement Implement the first phase from the tasks.md and stop after phase 1. 
 
-Expected outcome/result:
+
+Expected outcome/result: The initial setup of the stack and the empty frontend files that are mentioned in phase 1 in tasks.md. I also expect it to stop after this so that I can perform this with one phase at a time.
+
+
+Outcome of prompt: The output confirmed that it completed only phase 1 and that it created the files that were mentioned in the tasks file. Checked tasks.md and noticed that it had placed a check for the phase one tasks.
+
+Prompt 9
+
+Prompt: /speckit-implement Implement the second phase from the tasks.md file and stop after it is complete.
+
+Expected oucome/result: 
 
 Outcome of prompt:
 

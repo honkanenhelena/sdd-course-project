@@ -12,8 +12,8 @@
 
 **Purpose**: Add the runtime/development dependencies and the planned static UI shell.
 
-- [ ] T001 [P] Add FastAPI, Uvicorn, pytest, and pip-audit dependencies in `requirements.txt`.
-- [ ] T002 [P] Create the HTML document shell in `static/index.html`, the empty plain-JavaScript entry point in `static/app.js`, and the base stylesheet in `static/styles.css`.
+- [X] T001 [P] Add FastAPI, Uvicorn, pytest, and pip-audit dependencies in `requirements.txt`.
+- [X] T002 [P] Create the HTML document shell in `static/index.html`, the empty plain-JavaScript entry point in `static/app.js`, and the base stylesheet in `static/styles.css`.
 
 ---
 
