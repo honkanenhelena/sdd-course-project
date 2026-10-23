@@ -69,3 +69,12 @@ Expected outcome/result: An updated plan file for the model to work from. Also e
 Outcome of prompt: The prompt researched the web for simple designs with a subagent and it then udpated the plan with the information it received along with some other .md files such as quickstart and research. It also recommended the next step which is speckit-tasks
 
 
+Prompt 5
+
+Prompt: /speckit-tasks
+
+Expected outcome/result: A task file with the tasks it sees as needed to be done with tests for them. This tasks file will be important for after the prompt so that it can be reviewed so that I can confirm that the AI has understood the task at hand correctly.
+
+Outcome of prompt: Exactly as expected it created tasks.md with 25 tasks with user stories and tests. Checked the tasks.md file and it seemed to have tests for each task and the user stories were also involved in the tasks. The tests were also linked with the user stories well.
+
+
