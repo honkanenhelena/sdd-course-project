@@ -222,6 +222,83 @@ button:hover {
   background: var(--accent);
 }
 
+.budget-list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+}
+
+.budget-item {
+  border: 1px solid var(--panel-border);
+  border-left: 4px solid var(--success);
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+}
+
+.budget-item.at-budget {
+  border-left-color: var(--accent);
+}
+
+.budget-item.over-budget {
+  border-left-color: var(--danger);
+}
+
+.budget-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.budget-heading h3,
+.budget-heading p,
+.budget-item > p {
+  margin: 0;
+}
+
+.budget-heading h3 {
+  font-size: 1rem;
+}
+
+.budget-heading p {
+  color: var(--success);
+  font-weight: 700;
+  text-align: right;
+}
+
+.budget-item.at-budget .budget-heading p {
+  color: var(--accent-strong);
+}
+
+.budget-item.over-budget .budget-heading p {
+  color: var(--danger);
+}
+
+.budget-item > p {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.budget-item progress {
+  display: block;
+  width: 100%;
+  height: 0.55rem;
+  margin-top: 0.65rem;
+  accent-color: var(--success);
+}
+
+.budget-item.at-budget progress {
+  accent-color: var(--accent);
+}
+
+.budget-item.over-budget progress {
+  accent-color: var(--danger);
+}
+
 .expense-list {
   list-style: none;
   margin: 0;

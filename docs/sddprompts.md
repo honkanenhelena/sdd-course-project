@@ -141,3 +141,16 @@ Expected outcome/result: A complete phase 4 which includes the second user story
 
 Outcome of prompt: As expected the AI completed the phase with the tasks marked as completed in the tasks file. After a few tries it passed the tests, so checked the application and took some screenshots. As seen in Phase4SaveBudget the application also has placeholder for the next phase parts.
 
+
+
+Prompt 12
+
+Prompt: /speckit-implement Implement the fifth phase of the tasks.md file and stop when the phase is complete.
+
+Expected outcome/result: An implementation of the budgets per category as mentioned in the tasks.md together with the appropriate tests for the tasks and user stories.  
+
+Outcome of prompt: The AI completed the phase with all tasks completed and all tests passed, and tested it with a smoke test which passed. There was however an old expenses.db which it saw as legacy so left unchanged, and this is probably from the vibe build since the git ignores the .db ending files. The AI created a temporary db but moved this one so that it could create one with the next prompt. The AI edited the .gitignore so checked it to make sure there were no vulnerabilities.
+
+
+
+

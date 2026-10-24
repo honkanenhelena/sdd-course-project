@@ -86,14 +86,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T020 [US3] Add pytest API tests in `tests/test_app.py` for valid/invalid budget amounts, invalid months/categories, create-or-replace behavior, one budget per `(month, category)`, zero-spend progress, and recalculation after expense edits/deletes; confirm they fail before implementation.
+- [X] T020 [US3] Add pytest API tests in `tests/test_app.py` for valid/invalid budget amounts, invalid months/categories, create-or-replace behavior, one budget per `(month, category)`, zero-spend progress, and recalculation after expense edits/deletes; confirm they fail before implementation.
 
 ### Implementation for User Story 3
 
-- [ ] T021 [P] [US3] Implement `GET /api/budgets?month=YYYY-MM` and `PUT /api/budgets/{month}/{category}` in `app.py`; enforce positive EUR cents, valid month/category, atomic create-or-replace, and exact spent/remaining/overage calculations.
-- [ ] T022 [P] [US3] Add a month/category budget form and a budget progress region with limit, spent, remaining, and exceeded values in `static/index.html`.
-- [ ] T023 [US3] Implement budget loading and saving, progress refresh after expense changes, and clear over-limit messaging in `static/app.js`.
-- [ ] T024 [P] [US3] Style budget forms and progress indicators in `static/styles.css`; distinguish under-limit, fully used, and exceeded states with text as well as visual treatment.
+- [X] T021 [P] [US3] Implement `GET /api/budgets?month=YYYY-MM` and `PUT /api/budgets/{month}/{category}` in `app.py`; enforce positive EUR cents, valid month/category, atomic create-or-replace, and exact spent/remaining/overage calculations.
+- [X] T022 [P] [US3] Add a month/category budget form and a budget progress region with limit, spent, remaining, and exceeded values in `static/index.html`.
+- [X] T023 [US3] Implement budget loading and saving, progress refresh after expense changes, and clear over-limit messaging in `static/app.js`.
+- [X] T024 [P] [US3] Style budget forms and progress indicators in `static/styles.css`; distinguish under-limit, fully used, and exceeded states with text as well as visual treatment.
 
 **Checkpoint**: Each monthly category budget persists and reflects current expenses, including exact-limit and over-limit cases.
 

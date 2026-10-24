@@ -105,6 +105,16 @@ def _validate_month(value: Any) -> str:
     return value
 
 
+def _month_bounds(month: str) -> tuple[str, str]:
+    year, month_number = (int(part) for part in month.split("-"))
+    start_date = f"{month}-01"
+    if month_number == 12:
+        end_date = f"{year + 1:04d}-01-01"
+    else:
+        end_date = f"{year:04d}-{month_number + 1:02d}-01"
+    return start_date, end_date
+
+
 def _validate_note(value: Any) -> str | None:
     if value is None:
         return None
@@ -142,6 +152,22 @@ def _to_expense_payload(row: sqlite3.Row) -> dict[str, Any]:
 
 def _cents_to_eur(cents: int) -> str:
     return format(Decimal(cents) / Decimal("100"), ".2f")
+
+
+def _to_budget_payload(row: sqlite3.Row) -> dict[str, Any]:
+    limit_cents = row["amount_cents"]
+    spent_cents = row["spent_cents"]
+    return {
+        "month": row["month"],
+        "category": row["category"],
+        "category_label": CATEGORY_LABELS[row["category"]],
+        "limit": _cents_to_eur(limit_cents),
+        "spent": _cents_to_eur(spent_cents),
+        "remaining": _cents_to_eur(max(limit_cents - spent_cents, 0)),
+        "overage": _cents_to_eur(max(spent_cents - limit_cents, 0)),
+        "progress_percent": float(Decimal(spent_cents) * 100 / Decimal(limit_cents)),
+        "currency": "EUR",
+    }
 
 
 async def _read_request_payload(request: Request) -> dict[str, Any]:
@@ -252,12 +278,7 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-        year, month_number = (int(part) for part in month.split("-"))
-        start_date = f"{month}-01"
-        if month_number == 12:
-            end_date = f"{year + 1:04d}-01-01"
-        else:
-            end_date = f"{year:04d}-{month_number + 1:02d}-01"
+        start_date, end_date = _month_bounds(month)
 
         rows = request.state.db.execute(
             """
@@ -284,6 +305,80 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             "total": _cents_to_eur(total_cents),
             "categories": category_totals,
         }
+
+    @app.get("/api/budgets")
+    async def get_budgets(request: Request):
+        month = request.query_params.get("month")
+        if month is None:
+            raise HTTPException(status_code=422, detail="Field 'month' is required.")
+        try:
+            month = _validate_month(month)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        start_date, end_date = _month_bounds(month)
+        rows = request.state.db.execute(
+            """
+            SELECT b.month, b.category, b.amount_cents,
+                   COALESCE(SUM(e.amount_cents), 0) AS spent_cents
+            FROM monthly_budgets AS b
+            LEFT JOIN expenses AS e
+              ON e.category = b.category
+             AND e.spent_on >= ?
+             AND e.spent_on < ?
+            WHERE b.month = ?
+            GROUP BY b.month, b.category, b.amount_cents
+            ORDER BY b.category
+            """,
+            (start_date, end_date, month),
+        ).fetchall()
+        return [_to_budget_payload(row) for row in rows]
+
+    @app.put("/api/budgets/{month}/{category}")
+    async def put_budget(request: Request, month: str, category: str):
+        try:
+            month = _validate_month(month)
+            category = _validate_category(category)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        payload = await _read_request_payload(request)
+        try:
+            amount_cents = _validate_amount(payload.get("limit"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        try:
+            request.state.db.execute(
+                """
+                INSERT INTO monthly_budgets (month, category, amount_cents)
+                VALUES (?, ?, ?)
+                ON CONFLICT (month, category)
+                DO UPDATE SET amount_cents = excluded.amount_cents
+                """,
+                (month, category, amount_cents),
+            )
+            request.state.db.commit()
+        except sqlite3.IntegrityError as exc:
+            request.state.db.rollback()
+            raise HTTPException(status_code=422, detail="Budget could not be saved.") from exc
+
+        start_date, end_date = _month_bounds(month)
+        row = request.state.db.execute(
+            """
+            SELECT b.month, b.category, b.amount_cents,
+                   COALESCE(SUM(e.amount_cents), 0) AS spent_cents
+            FROM monthly_budgets AS b
+            LEFT JOIN expenses AS e
+              ON e.category = b.category
+             AND e.spent_on >= ?
+             AND e.spent_on < ?
+            WHERE b.month = ? AND b.category = ?
+            GROUP BY b.month, b.category, b.amount_cents
+            """,
+            (start_date, end_date, month, category),
+        ).fetchone()
+        return _to_budget_payload(row)
 
     @app.get("/api/expenses")
     async def list_expenses(request: Request):

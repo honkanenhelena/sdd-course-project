@@ -4,9 +4,12 @@
 
 # Necessary things to ignore
 .venv/
-__pychcache__/
+venv/
+__pycache__/
 *.pyc
 *.db
+dist/
+*.egg-info/
 .env
 .pytest_cache/
 .coverage

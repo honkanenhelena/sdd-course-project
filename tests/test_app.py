@@ -192,3 +192,128 @@ def test_monthly_summary_uses_month_boundaries_and_includes_zero_categories(clie
 
     invalid_month_response = client.get("/api/summary?month=2026-13")
     assert invalid_month_response.status_code == 422
+
+
+def test_budget_api_validates_month_category_and_positive_eur_amount(client_fixture):
+    client, _ = client_fixture
+    headers = {"origin": "http://127.0.0.1:8000"}
+
+    assert client.get("/api/budgets").status_code == 422
+    assert client.get("/api/budgets?month=2026-13").status_code == 422
+    assert client.put(
+        "/api/budgets/2026-13/groceries",
+        json={"limit": "20.00"},
+        headers=headers,
+    ).status_code == 422
+    assert client.put(
+        "/api/budgets/2026-10/unknown",
+        json={"limit": "20.00"},
+        headers=headers,
+    ).status_code == 422
+
+    for limit in ("0", "-1.00", "1.001", "NaN", 20):
+        response = client.put(
+            "/api/budgets/2026-10/groceries",
+            json={"limit": limit},
+            headers=headers,
+        )
+        assert response.status_code == 422
+
+    assert client.get("/api/budgets?month=2026-10").json() == []
+
+
+def test_budget_upsert_and_progress_recalculate_after_expense_changes(client_fixture):
+    client, _ = client_fixture
+    headers = {"origin": "http://127.0.0.1:8000"}
+    expense_response = client.post(
+        "/api/expenses",
+        json={
+            "amount": "8.00",
+            "date": "2026-10-15",
+            "category": "groceries",
+            "is_necessity": True,
+        },
+        headers=headers,
+    )
+    assert expense_response.status_code == 201
+    expense_id = expense_response.json()["id"]
+
+    budget_response = client.put(
+        "/api/budgets/2026-10/groceries",
+        json={"limit": "10.00"},
+        headers=headers,
+    )
+    assert budget_response.status_code == 200
+    assert budget_response.json() == {
+        "month": "2026-10",
+        "category": "groceries",
+        "category_label": "Groceries",
+        "limit": "10.00",
+        "spent": "8.00",
+        "remaining": "2.00",
+        "overage": "0.00",
+        "progress_percent": 80.0,
+        "currency": "EUR",
+    }
+    assert client.get("/api/budgets?month=2026-10").json() == [budget_response.json()]
+
+    update_headers = headers
+    equal_response = client.put(
+        f"/api/expenses/{expense_id}",
+        json={
+            "amount": "10.00",
+            "date": "2026-10-15",
+            "category": "groceries",
+            "is_necessity": True,
+        },
+        headers=update_headers,
+    )
+    assert equal_response.status_code == 200
+    equal_budget = client.get("/api/budgets?month=2026-10").json()[0]
+    assert equal_budget["spent"] == "10.00"
+    assert equal_budget["remaining"] == "0.00"
+    assert equal_budget["overage"] == "0.00"
+    assert equal_budget["progress_percent"] == 100.0
+
+    over_limit_response = client.put(
+        f"/api/expenses/{expense_id}",
+        json={
+            "amount": "12.00",
+            "date": "2026-10-15",
+            "category": "groceries",
+            "is_necessity": True,
+        },
+        headers=headers,
+    )
+    assert over_limit_response.status_code == 200
+    over_budget = client.get("/api/budgets?month=2026-10").json()[0]
+    assert over_budget["spent"] == "12.00"
+    assert over_budget["remaining"] == "0.00"
+    assert over_budget["overage"] == "2.00"
+    assert over_budget["progress_percent"] == 120.0
+
+    delete_response = client.delete(f"/api/expenses/{expense_id}", headers=headers)
+    assert delete_response.status_code == 204
+    zero_spend = client.get("/api/budgets?month=2026-10").json()[0]
+    assert zero_spend["spent"] == "0.00"
+    assert zero_spend["remaining"] == "10.00"
+    assert zero_spend["overage"] == "0.00"
+    assert zero_spend["progress_percent"] == 0.0
+
+    replaced = client.put(
+        "/api/budgets/2026-10/groceries",
+        json={"limit": "25.00"},
+        headers=headers,
+    )
+    assert replaced.status_code == 200
+    assert replaced.json()["limit"] == "25.00"
+    assert len(client.get("/api/budgets?month=2026-10").json()) == 1
+
+    zero_budget = client.put(
+        "/api/budgets/2026-10/housing",
+        json={"limit": "50.00"},
+        headers=headers,
+    )
+    assert zero_budget.status_code == 200
+    assert zero_budget.json()["spent"] == "0.00"
+    assert zero_budget.json()["progress_percent"] == 0.0
