@@ -131,3 +131,13 @@ Prompt: /speckit-implement Implement phase three of the tasks.md and stop after 
 Expected oucome/result: A complete phase 3 with the first user story complete and the appropriate tests for it made and completed.
 
 Outcome of prompt: A complete expense CRUD MVP with the appropriate tests done and passed. It did fail the tests 3 times but after the last fix it completed with 4 passed and with 1 warning, but this was about the phase 2 Starlette depreceation. The tasks.md file tasks, tests and implementations for user story 1 were all checked.
+
+
+Prompt 11
+
+Prompt: /speckit-implement Implement the fourth phase of the tasks.md file and stop after phase 4 is complete.
+
+Expected outcome/result: A complete phase 4 which includes the second user story and its tasks and tests. Expect it to create tests and probably also fail these again during the development.
+
+Outcome of prompt: As expected the AI completed the phase with the tasks marked as completed in the tasks file. After a few tries it passed the tests, so checked the application and took some screenshots. As seen in Phase4SaveBudget the application also has placeholder for the next phase parts.
+

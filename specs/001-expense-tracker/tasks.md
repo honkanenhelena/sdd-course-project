@@ -65,14 +65,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T015 [US2] Add pytest API tests in `tests/test_app.py` for inclusive date boundaries, combined date/category/necessity filters, and a reversed range returning HTTP 422 with `{"detail":"The start date must be on or before the end date."}`; also test month boundaries, empty months, and every category total, and confirm the tests fail before implementation.
+- [X] T015 [US2] Add pytest API tests in `tests/test_app.py` for inclusive date boundaries, combined date/category/necessity filters, and a reversed range returning HTTP 422 with `{"detail":"The start date must be on or before the end date."}`; also test month boundaries, empty months, and every category total, and confirm the tests fail before implementation.
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Implement validated expense filters and `GET /api/summary?month=YYYY-MM` in `app.py`; apply all selected filters, return HTTP 422 with the exact date-range error from `contracts/api.md` when `from` is after `to`, use half-open calendar-month bounds, and return all fixed categories with exact decimal-string totals.
-- [ ] T017 [P] [US2] Add month selection, inclusive date-range filters, category and necessity filters, monthly total, and category breakdown regions in `static/index.html`.
-- [ ] T018 [P] [US2] Implement filter requests, monthly summary loading, empty-state feedback, and a labeled horizontal category chart from the authoritative summary response in `static/app.js`; render exact values and do not rely on color alone.
-- [ ] T019 [P] [US2] Style the filters, monthly summary, category breakdown, and labeled chart in `static/styles.css`, including a readable narrow-screen layout.
+- [X] T016 [P] [US2] Implement validated expense filters and `GET /api/summary?month=YYYY-MM` in `app.py`; apply all selected filters, return HTTP 422 with the exact date-range error from `contracts/api.md` when `from` is after `to`, use half-open calendar-month bounds, and return all fixed categories with exact decimal-string totals.
+- [X] T017 [P] [US2] Add month selection, inclusive date-range filters, category and necessity filters, monthly total, and category breakdown regions in `static/index.html`.
+- [X] T018 [P] [US2] Implement filter requests, monthly summary loading, empty-state feedback, and a labeled horizontal category chart from the authoritative summary response in `static/app.js`; render exact values and do not rely on color alone.
+- [X] T019 [P] [US2] Style the filters, monthly summary, category breakdown, and labeled chart in `static/styles.css`, including a readable narrow-screen layout.
 
 **Checkpoint**: Filtered lists, monthly totals, category breakdown, and chart agree with persisted records, including empty months.
 

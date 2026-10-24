@@ -117,3 +117,78 @@ def test_expense_crud_and_validation(client_fixture):
     after_delete = client.get("/api/expenses")
     assert after_delete.status_code == 200
     assert after_delete.json() == []
+
+
+def test_expense_filters_are_inclusive_and_combinable(client_fixture):
+    client, _ = client_fixture
+    headers = {"origin": "http://127.0.0.1:8000"}
+    expenses = [
+        {"amount": "1.00", "date": "2026-10-01", "category": "groceries", "is_necessity": True},
+        {"amount": "2.00", "date": "2026-10-31", "category": "groceries", "is_necessity": False},
+        {"amount": "4.00", "date": "2026-11-01", "category": "groceries", "is_necessity": False},
+        {"amount": "8.00", "date": "2026-10-15", "category": "dining", "is_necessity": False},
+    ]
+    for expense in expenses:
+        assert client.post("/api/expenses", json=expense, headers=headers).status_code == 201
+
+    boundary_response = client.get("/api/expenses?from=2026-10-01&to=2026-10-31")
+    assert [item["date"] for item in boundary_response.json()] == [
+        "2026-10-31",
+        "2026-10-15",
+        "2026-10-01",
+    ]
+
+    combined_response = client.get(
+        "/api/expenses?from=2026-10-01&to=2026-10-31&category=groceries&necessity=false"
+    )
+    assert combined_response.status_code == 200
+    assert [(item["date"], item["amount"]) for item in combined_response.json()] == [
+        ("2026-10-31", "2.00")
+    ]
+
+    reversed_response = client.get("/api/expenses?from=2026-11-01&to=2026-10-31")
+    assert reversed_response.status_code == 422
+    assert reversed_response.json() == {
+        "detail": "The start date must be on or before the end date."
+    }
+
+
+def test_monthly_summary_uses_month_boundaries_and_includes_zero_categories(client_fixture):
+    client, _ = client_fixture
+    headers = {"origin": "http://127.0.0.1:8000"}
+    expenses = [
+        {"amount": "3.45", "date": "2026-10-31", "category": "groceries", "is_necessity": True},
+        {"amount": "6.00", "date": "2026-11-01", "category": "housing", "is_necessity": True},
+    ]
+    for expense in expenses:
+        assert client.post("/api/expenses", json=expense, headers=headers).status_code == 201
+
+    summary_response = client.get("/api/summary?month=2026-10")
+    assert summary_response.status_code == 200
+    summary = summary_response.json()
+    assert summary["month"] == "2026-10"
+    assert summary["currency"] == "EUR"
+    assert summary["total"] == "3.45"
+    assert [category["id"] for category in summary["categories"]] == [
+        "housing",
+        "utilities",
+        "groceries",
+        "transport",
+        "health",
+        "dining",
+        "shopping",
+        "entertainment",
+        "other",
+    ]
+    totals = {category["id"]: category["total"] for category in summary["categories"]}
+    assert totals["groceries"] == "3.45"
+    assert totals["housing"] == "0.00"
+    assert all(total == "0.00" for category, total in totals.items() if category != "groceries")
+
+    empty_response = client.get("/api/summary?month=2026-12")
+    assert empty_response.status_code == 200
+    assert empty_response.json()["total"] == "0.00"
+    assert all(category["total"] == "0.00" for category in empty_response.json()["categories"])
+
+    invalid_month_response = client.get("/api/summary?month=2026-13")
+    assert invalid_month_response.status_code == 422

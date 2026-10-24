@@ -242,6 +242,49 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     async def get_categories() -> list[dict[str, str]]:
         return [{"id": category, "label": CATEGORY_LABELS[category]} for category in CATEGORY_ORDER]
 
+    @app.get("/api/summary")
+    async def get_monthly_summary(request: Request):
+        month = request.query_params.get("month")
+        if month is None:
+            raise HTTPException(status_code=422, detail="Field 'month' is required.")
+        try:
+            month = _validate_month(month)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        year, month_number = (int(part) for part in month.split("-"))
+        start_date = f"{month}-01"
+        if month_number == 12:
+            end_date = f"{year + 1:04d}-01-01"
+        else:
+            end_date = f"{year:04d}-{month_number + 1:02d}-01"
+
+        rows = request.state.db.execute(
+            """
+            SELECT category, SUM(amount_cents) AS total_cents
+            FROM expenses
+            WHERE spent_on >= ? AND spent_on < ?
+            GROUP BY category
+            """,
+            (start_date, end_date),
+        ).fetchall()
+        totals_by_category = {row["category"]: row["total_cents"] for row in rows}
+        category_totals = [
+            {
+                "id": category,
+                "label": CATEGORY_LABELS[category],
+                "total": _cents_to_eur(totals_by_category.get(category, 0)),
+            }
+            for category in CATEGORY_ORDER
+        ]
+        total_cents = sum(totals_by_category.values())
+        return {
+            "month": month,
+            "currency": "EUR",
+            "total": _cents_to_eur(total_cents),
+            "categories": category_totals,
+        }
+
     @app.get("/api/expenses")
     async def list_expenses(request: Request):
         query = request.query_params

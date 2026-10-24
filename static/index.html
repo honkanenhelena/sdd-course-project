@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Expense Tracker</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <main class="app-shell">
@@ -74,10 +74,37 @@
             <span>To</span>
             <input type="date" name="to-date" />
           </label>
+          <label>
+            <span>Category</span>
+            <select name="filter-category">
+              <option value="">All categories</option>
+            </select>
+          </label>
+          <label>
+            <span>Necessity</span>
+            <select name="filter-necessity">
+              <option value="">All expenses</option>
+              <option value="true">Essential</option>
+              <option value="false">Optional</option>
+            </select>
+          </label>
         </div>
         <div class="summary-card">
           <p>Monthly total</p>
           <strong id="monthly-total">€0.00</strong>
+        </div>
+        <p class="form-feedback" id="summary-feedback" aria-live="polite"></p>
+        <div class="summary-details">
+          <section aria-labelledby="category-breakdown-heading">
+            <h3 id="category-breakdown-heading">Category breakdown</h3>
+            <ul id="category-breakdown" class="category-breakdown">
+              <li class="empty-state">Loading summary...</li>
+            </ul>
+          </section>
+          <section aria-labelledby="category-chart-heading">
+            <h3 id="category-chart-heading">Spending by category</h3>
+            <ol id="category-chart" class="category-chart" aria-label="Monthly spending by category"></ol>
+          </section>
         </div>
       </section>
 
@@ -124,6 +151,6 @@
       </section>
     </main>
 
-    <script src="app.js"></script>
+    <script src="/static/app.js"></script>
   </body>
 </html>

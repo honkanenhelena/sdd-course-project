@@ -149,6 +149,79 @@ button:hover {
   font-size: clamp(1.5rem, 2vw, 2.2rem);
 }
 
+.summary-details {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.2fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.summary-details h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.category-breakdown,
+.category-chart {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-breakdown {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.category-breakdown li,
+.chart-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.category-breakdown li {
+  border-bottom: 1px solid var(--panel-border);
+  padding: 0.35rem 0;
+}
+
+.category-breakdown strong,
+.chart-heading strong {
+  white-space: nowrap;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.category-chart {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.chart-row {
+  min-width: 0;
+}
+
+.chart-heading {
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.chart-track {
+  display: block;
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #e8edf2;
+}
+
+.chart-bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
 .expense-list {
   list-style: none;
   margin: 0;
@@ -176,5 +249,10 @@ button:hover {
 
   .panel {
     padding: 1rem;
+  }
+
+  .summary-details {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 }
