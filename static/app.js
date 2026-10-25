@@ -2,6 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const expenseForm = document.querySelector('#expense-form');
   const budgetForm = document.querySelector('#budget-form');
   const expenseList = document.querySelector('#expense-list');
+  const expenseDate = document.querySelector('[name="date"]');
+  const expenseCategory = document.querySelector('[name="category"]');
+  const expenseAmount = document.querySelector('[name="amount"]');
+  const expenseNecessity = document.querySelector('[name="necessity"]');
+  const expenseNote = document.querySelector('[name="note"]');
+  const expenseFeedback = document.querySelector('#expense-form-feedback');
+  const expenseSubmit = expenseForm?.querySelector('[type="submit"]');
+  const cancelEdit = document.querySelector('#cancel-edit');
   const totalDisplay = document.querySelector('#monthly-total');
   const budgetMonth = document.querySelector('[name="budget-month"]');
   const budgetCategory = document.querySelector('[name="budget-category"]');
@@ -18,6 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const currentDate = new Date();
   const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+  const currentDay = `${currentMonth}-${String(currentDate.getDate()).padStart(2, '0')}`;
+  let editingExpenseId = null;
+  if (expenseDate && !expenseDate.value) {
+    expenseDate.value = currentDay;
+  }
   if (summaryMonth && !summaryMonth.value) {
     summaryMonth.value = currentMonth;
   }
@@ -57,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const response = await fetch(`/api/expenses?${params.toString()}`);
-      const payload = await response.json();
+      const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || 'Unable to load expenses.');
       expenseList.replaceChildren();
       if (payload.length === 0) {
@@ -69,7 +82,50 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       for (const expense of payload) {
         const item = document.createElement('li');
-        item.textContent = `${expense.date} | ${expense.category_label} | €${expense.amount} | ${expense.is_necessity ? 'Essential' : 'Optional'}${expense.note ? ` | ${expense.note}` : ''}`;
+        const details = document.createElement('p');
+        const actions = document.createElement('div');
+        const editButton = document.createElement('button');
+        const deleteButton = document.createElement('button');
+        item.className = 'expense-item';
+        details.textContent = `${expense.date} | ${expense.category_label} | €${expense.amount} | ${expense.is_necessity ? 'Essential' : 'Optional'}${expense.note ? ` | ${expense.note}` : ''}`;
+        actions.className = 'expense-actions';
+        editButton.type = 'button';
+        editButton.className = 'secondary-button';
+        editButton.textContent = 'Edit';
+        editButton.setAttribute('aria-label', `Edit ${expense.category_label} expense from ${expense.date}`);
+        deleteButton.type = 'button';
+        deleteButton.className = 'danger-button';
+        deleteButton.textContent = 'Delete';
+        deleteButton.setAttribute('aria-label', `Delete ${expense.category_label} expense from ${expense.date}`);
+        editButton.addEventListener('click', () => {
+          editingExpenseId = expense.id;
+          expenseDate.value = expense.date;
+          expenseCategory.value = expense.category;
+          expenseAmount.value = expense.amount;
+          expenseNecessity.value = String(expense.is_necessity);
+          expenseNote.value = expense.note || '';
+          expenseSubmit.textContent = 'Update expense';
+          cancelEdit.hidden = false;
+          expenseForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          expenseDate.focus();
+        });
+        deleteButton.addEventListener('click', async () => {
+          if (!window.confirm('Delete this expense?')) return;
+          try {
+            const deleteResponse = await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
+            if (!deleteResponse.ok) {
+              const errorPayload = await deleteResponse.json().catch(() => ({}));
+              throw new Error(errorPayload.detail || 'Unable to delete expense.');
+            }
+            if (editingExpenseId === expense.id) resetExpenseForm();
+            if (expenseFeedback) expenseFeedback.textContent = 'Expense deleted.';
+            await Promise.all([loadExpenses(), loadSummary()]);
+          } catch (error) {
+            if (expenseFeedback) expenseFeedback.textContent = error.message;
+          }
+        });
+        actions.append(editButton, deleteButton);
+        item.append(details, actions);
         expenseList.append(item);
       }
     } catch (error) {
@@ -190,15 +246,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function resetExpenseForm() {
+    editingExpenseId = null;
+    expenseForm.reset();
+    expenseDate.value = currentDay;
+    expenseSubmit.textContent = 'Save expense';
+    cancelEdit.hidden = true;
+  }
+
   if (expenseForm) {
-    expenseForm.addEventListener('submit', (event) => {
+    expenseForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const feedback = document.querySelector('#expense-form-feedback');
-      if (feedback) {
-        feedback.textContent = 'Expense form ready for the next implementation phase.';
+      if (!expenseForm.checkValidity()) {
+        const invalidField = expenseForm.querySelector(':invalid');
+        invalidField.reportValidity();
+        const fieldName = invalidField.closest('label')?.querySelector('span')?.textContent || 'Field';
+        if (expenseFeedback) {
+          expenseFeedback.textContent = invalidField.validity.valueMissing
+            ? `${fieldName} is required.`
+            : `Enter a valid ${fieldName.toLowerCase()}.`;
+        }
+        return;
+      }
+      if (expenseFeedback) expenseFeedback.textContent = '';
+      const payload = {
+        amount: expenseAmount.value,
+        date: expenseDate.value,
+        category: expenseCategory.value,
+        is_necessity: expenseNecessity.value === 'true',
+        note: expenseNote.value,
+      };
+      try {
+        const response = await fetch(
+          editingExpenseId ? `/api/expenses/${editingExpenseId}` : '/api/expenses',
+          {
+            method: editingExpenseId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          },
+        );
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.detail || 'Unable to save expense.');
+        const message = editingExpenseId ? 'Expense updated.' : 'Expense saved.';
+        resetExpenseForm();
+        if (expenseFeedback) expenseFeedback.textContent = message;
+        await Promise.all([loadExpenses(), loadSummary()]);
+      } catch (error) {
+        if (expenseFeedback) expenseFeedback.textContent = error.message;
       }
     });
   }
+
+  cancelEdit?.addEventListener('click', resetExpenseForm);
 
   if (budgetForm) {
     budgetForm.addEventListener('submit', async (event) => {

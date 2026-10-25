@@ -120,6 +120,26 @@ button:hover {
   background: var(--accent-strong);
 }
 
+.secondary-button {
+  border: 1px solid var(--panel-border);
+  background: #eef2f6;
+  color: var(--text);
+}
+
+.secondary-button:hover {
+  background: #e0e7ee;
+}
+
+.danger-button {
+  border: 1px solid #e7b9b5;
+  background: #fff;
+  color: var(--danger);
+}
+
+.danger-button:hover {
+  background: #fff0ee;
+}
+
 .form-feedback {
   min-height: 1.2rem;
   margin: 0.75rem 0 0;
@@ -314,6 +334,29 @@ button:hover {
   background: #fafcff;
 }
 
+.expense-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.expense-item > p {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.expense-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+
+.expense-actions button {
+  padding: 0.55rem 0.75rem;
+}
+
 .empty-state {
   color: var(--muted);
 }
@@ -331,5 +374,10 @@ button:hover {
   .summary-details {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+
+  .expense-item {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

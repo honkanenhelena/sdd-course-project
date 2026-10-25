@@ -246,8 +246,22 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
                     status_code=403,
                     content={"detail": "Origin must match the current host."},
                 )
-            origin_host = (origin_parts.hostname or "").lower()
-            if not _is_loopback_host(origin_host):
+            request_parts = urlsplit(str(request.base_url))
+            try:
+                origin_port = origin_parts.port or (443 if origin_parts.scheme == "https" else 80)
+                request_port = request_parts.port or (443 if request_parts.scheme == "https" else 80)
+            except ValueError:
+                origin_port = None
+                request_port = -1
+            same_origin = (
+                origin_parts.username is None
+                and origin_parts.password is None
+                and origin_parts.scheme == request_parts.scheme
+                and (origin_parts.hostname or "").lower() == (request_parts.hostname or "").lower()
+                and origin_port == request_port
+                and _is_loopback_host(origin_parts.hostname)
+            )
+            if not same_origin:
                 return JSONResponse(
                     status_code=403,
                     content={"detail": "Origin must match the current host."},

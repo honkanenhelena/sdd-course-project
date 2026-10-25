@@ -103,9 +103,9 @@
 
 **Purpose**: Verify persistence/security boundaries, dependency health, and the complete quickstart workflow.
 
-- [ ] T025 Add pytest regression tests in `tests/test_app.py` for persistence across app recreation, database constraint enforcement/rollback, loopback Host handling, same-origin mutation checks, and root/static asset delivery.
-- [ ] T026 Run `python -m pip_audit -r requirements.txt`, review each finding, and resolve or explicitly document accepted risks in `requirements.txt`.
-- [ ] T027 Execute every scenario in `quickstart.md` against the completed application, including the first-time user adding an expense without further instructions, and update the guide at `specs/001-expense-tracker/quickstart.md` if any command or expected result differs.
+- [X] T025 Add pytest regression tests in `tests/test_app.py` for persistence across app recreation, database constraint enforcement/rollback, loopback Host handling, same-origin mutation checks, and root/static asset delivery.
+- [X] T026 Run `python -m pip_audit -r requirements.txt`, review each finding, and resolve or explicitly document accepted risks in `requirements.txt`.
+- [X] T027 Execute every scenario in `quickstart.md` against the completed application, including the first-time user adding an expense without further instructions, and update the guide at `specs/001-expense-tracker/quickstart.md` if any command or expected result differs.
 
 ---
 

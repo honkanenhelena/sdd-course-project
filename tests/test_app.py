@@ -10,7 +10,7 @@ from app import create_app
 def client_fixture(tmp_path):
     db_path = tmp_path / "expenses.db"
     app = create_app(db_path)
-    with TestClient(app) as client:
+    with TestClient(app, base_url="http://127.0.0.1:8000") as client:
         yield client, db_path
 
 
@@ -317,3 +317,102 @@ def test_budget_upsert_and_progress_recalculate_after_expense_changes(client_fix
     assert zero_budget.status_code == 200
     assert zero_budget.json()["spent"] == "0.00"
     assert zero_budget.json()["progress_percent"] == 0.0
+
+
+def test_expense_persists_across_app_recreation(tmp_path):
+    db_path = tmp_path / "expenses.db"
+    headers = {"origin": "http://127.0.0.1:8000"}
+    with TestClient(create_app(db_path), base_url="http://127.0.0.1:8000") as client:
+        response = client.post(
+            "/api/expenses",
+            json={
+                "amount": "12.34",
+                "date": "2026-10-22",
+                "category": "groceries",
+                "is_necessity": True,
+            },
+            headers=headers,
+        )
+        assert response.status_code == 201
+        expense_id = response.json()["id"]
+
+    with TestClient(create_app(db_path), base_url="http://127.0.0.1:8000") as client:
+        response = client.get("/api/expenses")
+
+    assert response.status_code == 200
+    assert [expense["id"] for expense in response.json()] == [expense_id]
+    assert response.json()[0]["amount"] == "12.34"
+
+
+def test_database_constraints_and_failed_transaction_rollback(client_fixture):
+    client, db_path = client_fixture
+    del client
+
+    with sqlite3.connect(db_path) as connection:
+        connection.execute("BEGIN")
+        connection.execute(
+            """
+            INSERT INTO expenses (amount_cents, spent_on, category, is_necessity, note)
+            VALUES (100, '2026-10-22', 'groceries', 1, NULL)
+            """
+        )
+        with pytest.raises(sqlite3.IntegrityError):
+            connection.execute(
+                """
+                INSERT INTO expenses (amount_cents, spent_on, category, is_necessity, note)
+                VALUES (0, '2026-10-22', 'groceries', 1, NULL)
+                """
+            )
+        connection.rollback()
+
+        with pytest.raises(sqlite3.IntegrityError):
+            connection.execute(
+                """
+                INSERT INTO expenses (amount_cents, spent_on, category, is_necessity, note)
+                VALUES (100, '2026-10-22', 'groceries', 2, NULL)
+                """
+            )
+        connection.rollback()
+        assert connection.execute("SELECT COUNT(*) FROM expenses").fetchone()[0] == 0
+
+
+def test_mutations_require_the_exact_same_origin(client_fixture):
+    client, _ = client_fixture
+    payload = {
+        "amount": "2.00",
+        "date": "2026-10-22",
+        "category": "groceries",
+        "is_necessity": True,
+    }
+    accepted = client.post(
+        "/api/expenses",
+        json=payload,
+        headers={"origin": "http://127.0.0.1:8000"},
+    )
+    assert accepted.status_code == 201
+
+    for origin in (
+        "http://localhost:8000",
+        "http://127.0.0.1:8001",
+        "https://127.0.0.1:8000",
+    ):
+        response = client.post("/api/expenses", json=payload, headers={"origin": origin})
+        assert response.status_code == 403
+
+    assert len(client.get("/api/expenses").json()) == 1
+
+
+def test_root_and_static_assets_are_served(client_fixture):
+    client, _ = client_fixture
+
+    root_response = client.get("/")
+    css_response = client.get("/static/styles.css")
+    js_response = client.get("/static/app.js")
+
+    assert root_response.status_code == 200
+    assert 'href="/static/styles.css"' in root_response.text
+    assert 'src="/static/app.js"' in root_response.text
+    assert css_response.status_code == 200
+    assert "body" in css_response.text
+    assert js_response.status_code == 200
+    assert "DOMContentLoaded" in js_response.text
