@@ -1,6 +1,6 @@
 The same verification plan will be used for both the vibe coded build and the sdd-build.
 
-The verifications will be run on both branches final versions before fixing any more of the found errors. Fresh environments will be made for both branches for the tests with the same python version and tools. The outputs of the verification will be in verificationEvidence.md in /docs with a subfolder for the vibe and the sdd. Github issues will be raised for the found problems. 
+The verifications will be run on both branches final versions before fixing any more of the found errors. Fresh environments will be made for both branches for the tests with the same python version and tools. The outputs of the verification will be in /docs with subfolders for the vibe and the sdd. Github issues will be raised for the found problems. 
 
 Automated tests to run:
 
