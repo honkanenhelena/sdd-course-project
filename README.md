@@ -6,7 +6,7 @@ Team Details (Team [Insert Team Number/Name])
 
 [2403510] 
 
-[e.g., Lead Spec Writer, Prompt Engineer] 
+[Solo] 
 
 [100%]
 
@@ -15,36 +15,48 @@ Team Details (Team [Insert Team Number/Name])
  
 
 Executive Summary (Must be included in the report)
+Th project was to build a small web application with both vibe coding and specification-driven development (sdd) to compare the outcome and development of the application. The application of choice was a small expense tracker meant for personal use. The app needs to let a user add, edit, and delete expenses with the data for an expense being amount, date, category, necessity and an optional note. The app then needs to filter these expenses, let the user view a monthly summary and then chart the expenses by category. The application also needs to have a feature for the user to set a monthly budget for a category. The applications used the same stack for the application, using Python 3.15, FastAPI, SQLite and a HTML and JavaScript frontend. Both builds were also made with the same AI, being the Github Copilot inside of VS Code switched to Agent mode with the automatic model selection on, this selecting GPT 6 Luna for both the vibe and sdd version.
 
-Provide a concise summary (200–300 words) of the project. Clearly state:
+The vibe coded version was made by talking in plain words with conversational prompts with no written specification for the model to follow. The vibe coded version reached a version which fulfilled all of the features in just 3 prompts after 5 hours of work. The SDD build used Githubs Spec Kit and followed its workflow, being constitution, specify, clarify, plan, tasks, analyze and implement. The analyze step found six issues with the plan before the development started in the next phase, which let it fix these before it started. The application was completed in 13 prompts which took around 9 hours of work. 
 
-The system is built, 
-The specific formal/semi-formal specification techniques used,
-The AI models/tools leveraged (e.g., Cursor, GitHub Copilot, custom LLM pipelines), 
-The SDD workflow that you have used in your project
-The SDD tool (i.e., Spec-kit) that you have used
-The verification and validation method used to ensure that the AI-generated code implements your specifications. 
+Both builds were verified after development with the same verification plan. The verification was automated tests ran with their own pytest suites with coverage measurements, bandit security linting and then pip-audit checks for the dependencies used. After this there was a manual verification where a human tested edge-cases using the web-application and the API. After the edge-cases there was also an acceptance check for the features. Using the human-in-the-loop review a Github issue was raised for each problem encountered during the verification.
  
 
 1. Introduction & Paradigm Shift (3 Points)
 
 1.1 Project Overview & Objectives 
-The project idea is to create a finance tracker where one can input their spendings and make it easier to possibly cut costs or to just keep track of what they are spending and where.
+The project idea is to create a finance tracker where one can input their spendings and make it easier to possibly cut costs or to just keep track of what they are spending and where. A user can record expenses with an amount, date, category, necessity and optional note, letting them then edit and delete these expenses as need be. The application then needs to let the user filter the expenses according to date, category and necessity and it needs to show a monthly summary with a chart of the spending for each month. The application also needs to include a feature for setting budgets per category with a limit per month. The expenses need to be saved between sessions as well.
+
+The objective of the project was to build the same application twice so that vibe coding and sdd based coding could be compared. They were both built with the same features required, using the same technology stack and with the same AI tool.
 
 1.2 The Vibe Coding 
+Vibe coding is the act of talking with an AI model with human language to produce some application or other form of software. The developer that is vibe coding is describing the thing they want to build in natural language to the model, and then the model produces this as a response to this. If there are possible changes or fixes the developer needs or wants then they respond with this in the next prompt. 
 
-Explain what vibe coding is and how your team approached development using Vibe coding
+I used this approach in the vibe coded build by writing a short first prompt which included all of the features I wanted but in my own words instead of with criteria. I then sent it to the Github Copilot chat which directed it to GPT Luna 6. After the model model had built the application and responded with it I checked it out by running the app, compared it to what I expected and the wrote the next prompt according to what was missing. The build using this method was completed in just 3 prompts. 
+
 1.3 The SDD Methodology 
+Specification-driven development is the development method where the developer makes a specification and has it as the focus of the project. The specification has the requirements, constraints and design decisions figured out before any code is written so that these can be checked before development. 
 
-Briefly introduce SDD and how your team approached the project development using Specification-Driven Software Development. Which specific tool has been used and briefly explain the reason behind choosing that tool 
-Lastly, briefly explain the project's specifications and scope, and provide a summary of the development timeline. This portion can also be complemented with the workflow of the project (both for Vibe Coding and SDD)
+For the SDD build I used the Github Spec kit which is an open-sourced SDD toolkit with instructions for an AI model. I chose it since it is the toolkit that was included in the course materials and since it also integrated well with the Github Copilot model which I used. The scope of both builds was the same 7 feature list with the appropriate criteria for when it can be considered done. Both builds were kept to purely these features and any out-of-scope features that the AI may have tried implementing were excluded.
+
+The timeline of the project was:
+
+Setup phase, October 16-17, Created the repository, feature list, decided on tech stack
+Vibe build, October 17-21, First prompt, Prompt 1, 2 and 3
+SDD build, October 22-24, Constitution, specify, clarify, plan, tasks, analyze, implement
+Verification, October 25-31, Automated and manual verification steps
+
 2. Requirements & System Specification: (6 points)
 
 This is the most critical section of the report. It details the "source of truth" you constructed to feed into the AI. 
 
 2.1 Stakeholders:
+End users
+Private individuals who want to track their spending and stay within their own budgets. They are included since they are the primary user of the application and all features are derived from what is their expected needs.
 
-Brief description of the different stakeholders for your system, and also explain why you have chosen them as system stakeholders.
+Developer
+The developer who wants have clear code which meets the requirements, is maintainable and testable. The developer is included since it is them who writes the specification, prompts the AI and verifies the outcomes. 
+
 2.2 Functional Requirements: 
 
 Describe briefly what the functional requirements are. Later, explain the functional requirements of this project.
